@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ミク · Carga Masiva ✨</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --teal:     #39c5bb;
+      --teal-dark:#1ba8a0;
+      --bg:       #0d0d1a;
+      --bg2:      #0a1628;
+      --card:     rgba(8,20,40,0.85);
+      --text:     #e0f8f7;
+      --dim:      rgba(57,197,187,0.55);
+      --green:    #2ecc71;
+      --green-s:  rgba(46,204,113,0.12);
+      --red:      #e74c3c;
+      --red-s:    rgba(231,76,60,0.12);
+      --yellow:   #f0c040;
+      --yellow-s: rgba(240,192,64,0.12);
+      --blue:     #3498db;
+      --blue-s:   rgba(52,152,219,0.12);
+      --nav-h:    58px;
+    }
+
+    body {
+      font-family: 'M PLUS Rounded 1c', sans-serif;
+      background: linear-gradient(135deg, var(--bg) 0%, var(--bg2) 50%, var(--bg) 100%);
+      color: var(--text); min-height: 100vh;
+    }
+
+    .star {
+      position: fixed; border-radius: 50%; background: var(--teal); opacity: 0;
+      animation: twinkle var(--d) ease-in-out infinite var(--delay); z-index: 0; pointer-events: none;
+    }
+    @keyframes twinkle { 0%,100%{opacity:0;transform:scale(.5)} 50%{opacity:var(--op);transform:scale(1)} }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; height: var(--nav-h);
+      background: rgba(8,20,40,0.97);
+      border-bottom: 1.5px solid rgba(57,197,187,0.25);
+      display: flex; align-items: center; padding: 0 28px; z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 0.95rem; font-weight: 800;
+      color: var(--teal); letter-spacing: 2px; flex: 1;
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 16px; border-radius: 10px;
+      font-family: 'M PLUS Rounded 1c', sans-serif;
+      font-size: 0.78rem; font-weight: 700;
+      cursor: pointer; border: 1.5px solid rgba(57,197,187,0.25);
+      background: rgba(57,197,187,0.07); color: var(--dim);
+      letter-spacing: 1px; transition: all 0.25s; text-decoration: none;
+    }
+    .btn:hover {
+      background: rgba(57,197,187,0.15); border-color: rgba(57,197,187,0.55);
+      color: var(--teal); box-shadow: 0 0 14px rgba(57,197,187,0.15);
+    }
+
+    main {
+      padding-top: calc(var(--nav-h) + 40px);
+      padding-bottom: 60px; max-width: 800px;
+      margin: 0 auto; padding-left: 24px; padding-right: 24px;
+      position: relative; z-index: 1;
+    }
+
+    h1 { font-size: 1.6rem; font-weight: 800; color: var(--teal); letter-spacing: 3px; text-shadow: 0 0 20px rgba(57,197,187,0.4); margin-bottom: 6px; }
+    .subtitle { color: var(--dim); font-size: 0.85rem; letter-spacing: 1px; margin-bottom: 32px; }
+
+    .card {
+      background: var(--card);
+      border: 1.5px solid rgba(57,197,187,0.2);
+      border-radius: 16px; padding: 28px; margin-bottom: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 40px rgba(57,197,187,0.04);
+    }
+
+    .card-title {
+      font-size: 0.72rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 3px; color: var(--dim); margin-bottom: 16px;
+    }
+
+    /* ── DROP ZONE ── */
+    .dropzone {
+      border: 2px dashed rgba(57,197,187,0.3);
+      border-radius: 12px; padding: 44px 20px;
+      text-align: center; cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+    .dropzone:hover, .dropzone.drag-over {
+      border-color: var(--teal);
+      background: rgba(57,197,187,0.05);
+    }
+    .dropzone input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .dropzone-icon { font-size: 2.4rem; margin-bottom: 12px; }
+    .dropzone-text { font-size: 0.9rem; color: var(--dim); letter-spacing: 1px; }
+    .dropzone-text strong { color: var(--text); font-weight: 800; }
+    .file-name { margin-top: 12px; font-size: 0.8rem; color: var(--teal); display: none; letter-spacing: 1px; }
+
+    /* ── FORMATO ── */
+    .format-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .format-table th {
+      text-align: left; padding: 8px 12px;
+      background: rgba(57,197,187,0.06);
+      border: 1px solid rgba(57,197,187,0.15);
+      font-weight: 800; color: var(--dim); letter-spacing: 1px;
+    }
+    .format-table td {
+      padding: 8px 12px;
+      border: 1px solid rgba(57,197,187,0.1);
+      color: var(--text); font-size: 0.8rem;
+    }
+
+    /* ── BOTÓN SUBIR ── */
+    .btn-upload {
+      width: 100%; padding: 13px;
+      background: linear-gradient(90deg, var(--teal-dark), var(--teal));
+      color: #0a1628; border: none; border-radius: 12px;
+      font-family: 'M PLUS Rounded 1c', sans-serif;
+      font-size: 0.95rem; font-weight: 800; letter-spacing: 2px;
+      cursor: pointer; margin-top: 20px;
+      transition: all 0.3s;
+      box-shadow: 0 4px 20px rgba(57,197,187,0.35);
+    }
+    .btn-upload:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(57,197,187,0.55); }
+    .btn-upload:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .loader { display: none; text-align: center; padding: 20px; color: var(--dim); font-size: 0.88rem; letter-spacing: 1px; }
+
+    /* ── STATS ── */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px; margin-bottom: 20px;
+    }
+
+    .stat-card {
+      border-radius: 12px; padding: 18px; text-align: center; border: 1.5px solid;
+    }
+    .stat-card.ok     { background: var(--green-s);  border-color: rgba(46,204,113,0.3);  color: var(--green); }
+    .stat-card.dup    { background: var(--yellow-s); border-color: rgba(240,192,64,0.3);  color: var(--yellow); }
+    .stat-card.vac    { background: var(--blue-s);   border-color: rgba(52,152,219,0.3);  color: var(--blue); }
+    .stat-card.inv    { background: var(--red-s);    border-color: rgba(231,76,60,0.3);   color: var(--red); }
+
+    .stat-num { font-size: 2rem; font-weight: 800; display: block; line-height: 1; }
+    .stat-label { font-size: 0.75rem; margin-top: 6px; font-weight: 700; opacity: 0.85; letter-spacing: 1px; }
+
+    /* ── BANNERS ── */
+    .success-banner, .error-banner {
+      padding: 13px 18px; border-radius: 10px;
+      font-size: 0.88rem; font-weight: 700; margin-bottom: 16px;
+      display: none; letter-spacing: 1px;
+    }
+    .success-banner { background: var(--green-s); border: 1.5px solid rgba(46,204,113,0.35); color: var(--green); }
+    .error-banner   { background: var(--red-s);   border: 1.5px solid rgba(231,76,60,0.35);  color: var(--red); }
+
+    /* ── TABLA ERRORES ── */
+    .error-section { display: none; }
+    .error-section.visible { display: block; }
+
+    .error-section h3 {
+      font-size: 0.88rem; font-weight: 800; margin-bottom: 14px;
+      color: var(--text); letter-spacing: 1px;
+    }
+
+    .error-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .error-table th {
+      text-align: left; padding: 10px 14px;
+      background: rgba(57,197,187,0.06);
+      border: 1px solid rgba(57,197,187,0.15);
+      font-weight: 800; color: var(--dim);
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 2px;
+    }
+    .error-table td { padding: 10px 14px; border: 1px solid rgba(57,197,187,0.1); color: var(--text); }
+    .error-table tr:nth-child(even) td { background: rgba(57,197,187,0.03); }
+
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 0.72rem; font-weight: 800; letter-spacing: 1px;
+    }
+    .badge-dup { background: var(--yellow-s); color: var(--yellow); border: 1px solid rgba(240,192,64,0.3); }
+    .badge-vac { background: var(--blue-s);   color: var(--blue);   border: 1px solid rgba(52,152,219,0.3); }
+    .badge-inv { background: var(--red-s);    color: var(--red);    border: 1px solid rgba(231,76,60,0.3); }
+
+    
+    /* ── ROCK EASTER EGG ── */
+    #rockOverlay {
+      position: fixed; inset: 0; z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.78);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.45s ease;
+    }
+    #rockOverlay.show {
+      opacity: 1;
+    }
+    #rockImg {
+      width: clamp(200px, 28vw, 350px);
+      height: auto;
+      border-radius: 16px;
+      border: 3px solid #39c5bb;
+      box-shadow: 0 0 50px rgba(57,197,187,0.6);
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">📤 ミク · CARGA MASIVA</div>
+  <a class="btn" href="/dashprincipal">← Volver al tablero</a>
+</nav>
+
+<main>
+  <h1>📤 Carga Masiva</h1>
+  <p class="subtitle">Sube un archivo Excel (.xlsx / .xls) para insertar múltiples estudiantes ✨</p>
+
+  <!-- FORMATO -->
+  <div class="card">
+    <div class="card-title">📋 Formato requerido del Excel</div>
+    <table class="format-table">
+      <thead>
+        <tr>
+          <th>nombre</th><th>edad</th><th>carrera</th>
+          <th>nota1</th><th>nota2</th><th>nota3</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Ana García</td><td>20</td><td>Ingenieria</td>
+          <td>4.5</td><td>3.8</td><td>4.2</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- UPLOAD -->
+  <div class="card">
+    <div class="card-title">📁 Selecciona o arrastra tu archivo</div>
+    <form id="uploadForm">
+      <div class="dropzone" id="dropzone">
+        <input type="file" id="fileInput" accept=".xlsx,.xls">
+        <div class="dropzone-icon">📂</div>
+        <p class="dropzone-text"><strong>Haz click</strong> o arrastra aquí tu Excel</p>
+        <p class="dropzone-text" style="font-size:0.75rem;margin-top:6px">Solo archivos .xlsx o .xls</p>
+        <p class="file-name" id="fileName"></p>
+      </div>
+      <div class="loader" id="loader">⏳ Procesando archivo...</div>
+      <button type="submit" class="btn-upload" id="btnUpload" disabled>
+        ✨ SUBIR Y PROCESAR
+      </button>
+    </form>
+  </div>
+
+  <!-- RESULTADO -->
+  <div id="resultadoSection" style="display:none">
+    <div class="success-banner" id="successBanner"></div>
+    <div class="error-banner"   id="errorBanner"></div>
+
+    <div class="card">
+      <div class="card-title">Resumen de la carga</div>
+      <div class="stats-grid">
+        <div class="stat-card ok">
+          <span class="stat-num" id="statInsertados">0</span>
+          <div class="stat-label">✅ Insertados</div>
+        </div>
+        <div class="stat-card dup">
+          <span class="stat-num" id="statDuplicados">0</span>
+          <div class="stat-label">⚠️ Duplicados</div>
+        </div>
+        <div class="stat-card vac">
+          <span class="stat-num" id="statVacios">0</span>
+          <div class="stat-label">🔲 Vacíos</div>
+        </div>
+        <div class="stat-card inv">
+          <span class="stat-num" id="statInvalidos">0</span>
+          <div class="stat-label">❌ Inválidos</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card error-section" id="errorSection">
+      <div class="card-title">Registros rechazados</div>
+      <h3>Detalle de los datos que no se pudieron subir</h3>
+      <table class="error-table">
+        <thead>
+          <tr><th>#</th><th>Estudiante</th><th>Motivo del rechazo</th><th>Tipo</th></tr>
+        </thead>
+        <tbody id="errorTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script>
+  for(let i=0;i<40;i++){
+    const s=document.createElement('div');s.className='star';
+    const sz=Math.random()*2.5+1;
+    s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}vw;top:${Math.random()*100}vh;--d:${2+Math.random()*4}s;--delay:-${Math.random()*4}s;--op:${.2+Math.random()*.5};`;
+    document.body.appendChild(s);
+  }
+
+  const fileInput = document.getElementById('fileInput');
+  const fileName  = document.getElementById('fileName');
+  const btnUpload = document.getElementById('btnUpload');
+  const dropzone  = document.getElementById('dropzone');
+  const form      = document.getElementById('uploadForm');
+  const loader    = document.getElementById('loader');
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length > 0) {
+      fileName.textContent = '📄 ' + fileInput.files[0].name;
+      fileName.style.display = 'block';
+      btnUpload.disabled = false;
+    }
+  });
+
+  dropzone.addEventListener('dragover',  e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+  dropzone.addEventListener('drop', e => {
+    e.preventDefault(); dropzone.classList.remove('drag-over');
+    fileInput.files = e.dataTransfer.files;
+    fileInput.dispatchEvent(new Event('change'));
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    loader.style.display = 'block';
+    btnUpload.disabled = true;
+    document.getElementById('resultadoSection').style.display = 'none';
+
+    const formData = new FormData();
+    formData.append('archivo', fileInput.files[0]);
+
+    try {
+      const res  = await fetch('/carga_masiva', { method: 'POST', body: formData });
+      const data = await res.json();
+      loader.style.display = 'none';
+      document.getElementById('resultadoSection').style.display = 'block';
+
+      if (data.ok) {
+        const banner = document.getElementById('successBanner');
+        banner.style.display = 'block';
+        banner.textContent = `✅ Archivo procesado. Se insertaron ${data.insertados} estudiante(s).`;
+        document.getElementById('errorBanner').style.display = 'none';
+
+        document.getElementById('statInsertados').textContent = data.insertados;
+        document.getElementById('statDuplicados').textContent = data.duplicados;
+        document.getElementById('statVacios').textContent     = data.vacios;
+        document.getElementById('statInvalidos').textContent  = data.invalidos;
+
+        const tbody = document.getElementById('errorTableBody');
+        tbody.innerHTML = '';
+        if (data.detalles && data.detalles.length > 0) {
+          document.getElementById('errorSection').classList.add('visible');
+          data.detalles.forEach((msg, i) => {
+            const { nombre, motivo, tipo } = parsearError(msg);
+            const bc = tipo==='Duplicado' ? 'badge-dup' : tipo==='Vacío' ? 'badge-vac' : 'badge-inv';
+            tbody.innerHTML += `<tr>
+              <td style="color:var(--dim)">${i+1}</td>
+              <td><strong>${nombre}</strong></td>
+              <td>${motivo}</td>
+              <td><span class="badge ${bc}">${tipo}</span></td>
+            </tr>`;
+          });
+        } else {
+          document.getElementById('errorSection').classList.remove('visible');
+        }
+      } else {
+        const banner = document.getElementById('errorBanner');
+        banner.style.display = 'block';
+        banner.textContent = '❌ ' + data.error;
+        document.getElementById('successBanner').style.display = 'none';
+        document.getElementById('errorSection').classList.remove('visible');
+      }
+    } catch(err) {
+      loader.style.display = 'none';
+      const banner = document.getElementById('errorBanner');
+      banner.style.display = 'block';
+      banner.textContent = '❌ Error de conexión al servidor.';
+      document.getElementById('resultadoSection').style.display = 'block';
+    }
+    btnUpload.disabled = false;
+  });
+
+  function parsearError(msg) {
+    let nombre = "Desconocido", motivo = msg, tipo = "Inválido";
+    if (msg.includes("Ya existe en BD")) {
+      tipo = "Duplicado";
+      const m = msg.match(/— (.+)/); if (m) nombre = m[1];
+      motivo = "Ya existe un estudiante con el mismo nombre, carrera y edad en la BD.";
+    } else if (msg.includes("Edad inválida")) {
+      const mE = msg.match(/\((.+?)\)/), mN = msg.match(/— (.+)/);
+      if (mN) nombre = mN[1];
+      motivo = `La edad (${mE ? mE[1] : '?'}) está fuera del rango permitido (15–80 años).`;
+    } else if (msg.match(/nota\d inválida/i)) {
+      const mNt = msg.match(/(nota\d)/i), mV = msg.match(/\((.+?)\)/), mN = msg.match(/— (.+)/);
+      if (mN) nombre = mN[1];
+      motivo = `La ${mNt ? mNt[1] : 'nota'} (${mV ? mV[1] : '?'}) está fuera del rango (0.0–5.0).`;
+    } else if (msg.includes("Error insertando")) {
+      const m = msg.match(/Error insertando (.+?):/); if (m) nombre = m[1];
+      motivo = "Error al insertar en la base de datos.";
+    } else if (msg.includes("vacío") || msg.includes("vacio")) {
+      tipo = "Vacío";
+    }
+    return { nombre, motivo, tipo };
+  }
+</script>
+<!-- ── ROCK EASTER EGG ── -->
+<div id="rockOverlay">
+  <img id="rockImg" src="/static/rock.jpg" alt="The Rock">
+</div>
+<audio id="vineAudio" src="/static/Vine boom sound effect.mp3" preload="auto"></audio>
+
+<script>
+  (function() {
+    var rockTimer = null;
+
+    document.addEventListener('keydown', function(e) {
+      if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
+      if (e.key === 'r' || e.key === 'R') showRock();
+    });
+
+    function showRock() {
+      var overlay = document.getElementById('rockOverlay');
+      var audio   = document.getElementById('vineAudio');
+
+      // Cancelar timer anterior y resetear clase para forzar reflow
+      clearTimeout(rockTimer);
+      overlay.classList.remove('show');
+      void overlay.offsetWidth; // reflow — arranca transición desde 0
+
+      overlay.classList.add('show');
+      audio.currentTime = 0;
+      audio.play().catch(function(){});
+
+      rockTimer = setTimeout(function() {
+        overlay.classList.remove('show'); // fade out automático
+      }, 3000);
+    }
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ミク · Esquiva Haters</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0d0d1a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Press Start 2P', monospace;
+    color: #e0f8f7;
+    overflow: hidden;
+    user-select: none;
+    image-rendering: pixelated;
+  }
+
+  h1 {
+    font-size: 0.78rem;
+    color: #39c5bb;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+    text-shadow: 0 0 10px rgba(57,197,187,0.7), 2px 2px 0 #060d18;
+  }
+
+  #hud {
+    display: flex;
+    gap: 22px;
+    margin-bottom: 5px;
+    font-size: 0.46rem;
+    color: rgba(57,197,187,0.6);
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+  }
+  #hud span { color: #e0f8f7; }
+  #powerupHud { color: #f0c040; }
+
+  #shootBar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.38rem;
+    color: rgba(57,197,187,0.5);
+  }
+  #shootBarBg {
+    width: 60px; height: 7px;
+    background: rgba(57,197,187,0.1);
+    border: 1px solid rgba(57,197,187,0.3);
+  }
+  #shootBarFill {
+    height: 100%;
+    background: #2ecc71;
+    box-shadow: 0 0 4px #2ecc71;
+    transition: width 0.05s;
+  }
+
+  #muteBtn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.38rem;
+    padding: 4px 8px;
+    background: rgba(57,197,187,0.1);
+    border: 1px solid rgba(57,197,187,0.3);
+    color: rgba(57,197,187,0.6);
+    cursor: pointer;
+    letter-spacing: 1px;
+  }
+  #muteBtn:hover { background: rgba(57,197,187,0.2); color: #39c5bb; }
+
+  #gameWrap {
+    position: relative;
+    width: 1000px;
+    max-width: 98vw;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    image-rendering: pixelated;
+    border: 2px solid #39c5bb;
+    box-shadow: 0 0 0 2px #0d0d1a,
+                0 0 0 4px rgba(57,197,187,0.25),
+                0 0 50px rgba(57,197,187,0.12);
+  }
+
+  #mikuImg {
+    position: absolute;
+    image-rendering: pixelated;
+    pointer-events: none;
+  }
+
+  #bossBar {
+    display: none;
+    position: absolute;
+    top: 8px; left: 50%; transform: translateX(-50%);
+    width: 65%; z-index: 5;
+    text-align: center;
+  }
+  #bossBarLabel {
+    font-size: 0.38rem;
+    letter-spacing: 2px;
+    margin-bottom: 3px;
+    animation: bossLabelBlink 0.6s step-end infinite;
+  }
+  @keyframes bossLabelBlink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* Barra de boss final más grande y llamativa */
+  #bossBarBg {
+    height: 11px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.2);
+    transition: height 0.3s;
+  }
+  #bossBarBg.final-boss-bar {
+    height: 18px;
+    border: 2px solid rgba(0,255,153,0.5);
+    box-shadow: 0 0 12px rgba(0,255,153,0.3);
+  }
+  #bossBarFill { height: 100%; transition: width 0.15s; }
+
+  #nowPlaying {
+    position: absolute;
+    bottom: 6px; right: 8px;
+    font-size: 0.3rem;
+    color: rgba(57,197,187,0.35);
+    letter-spacing: 1px;
+    pointer-events: none;
+    z-index: 4;
+    transition: opacity 1s;
+  }
+
+  #overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(6,10,20,0.92);
+    gap: 12px;
+    z-index: 10;
+  }
+  #overlay.hidden { display: none; }
+
+  #overlayTitle {
+    font-size: 1rem;
+    color: #39c5bb;
+    text-shadow: 0 0 14px rgba(57,197,187,0.9), 3px 3px 0 #060d18;
+    animation: blink2 1.2s step-end infinite;
+  }
+  @keyframes blink2 { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  #overlayMsg {
+    font-size: 0.4rem;
+    color: rgba(57,197,187,0.55);
+    text-align: center;
+    line-height: 2.6;
+  }
+
+  #scoreResult { font-size: 0.65rem; color: #e0f8f7; text-shadow: 2px 2px 0 #060d18; }
+  #recordLabel { font-size: 0.5rem;  color: #39c5bb; }
+
+  #btnPlay {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.58rem;
+    padding: 12px 26px;
+    background: #39c5bb;
+    color: #060d18;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 2px;
+    box-shadow: 4px 4px 0 #1ba8a0;
+    transition: transform 0.08s;
+    margin-top: 6px;
+  }
+  #btnPlay:hover  { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 #1ba8a0; }
+  #btnPlay:active { transform: translate(2px,2px);   box-shadow: 2px 2px 0 #1ba8a0; }
+
+  .bottom-bar {
+    margin-top: 8px;
+    display: flex;
+    gap: 28px;
+    font-size: 0.36rem;
+    color: rgba(57,197,187,0.25);
+    letter-spacing: 2px;
+  }
+  .back-link { color: rgba(57,197,187,0.3); text-decoration: none; }
+  .back-link:hover { color: #39c5bb; }
+
+  .star {
+    position: fixed; background: #39c5bb; opacity: 0;
+    animation: twinkle var(--d) ease-in-out infinite var(--delay);
+    z-index: 0; pointer-events: none;
+  }
+  @keyframes twinkle { 0%,100%{opacity:0} 50%{opacity:var(--op)} }
+  /* ── PANTALLA DE VICTORIA ── */
+  #victoryOverlay {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,10,5,0.93);
+    gap: 14px;
+    z-index: 11;
+  }
+  #victoryOverlay.show { display: flex; }
+
+  #victoryTitle {
+    font-size: 1.1rem;
+    color: #00ff99;
+    text-shadow: 0 0 20px #00ff99, 0 0 40px #00ff99, 3px 3px 0 #003322;
+    animation: victoryPulse 0.6s ease-in-out infinite alternate;
+  }
+  @keyframes victoryPulse {
+    from { text-shadow: 0 0 10px #00ff99, 2px 2px 0 #003322; }
+    to   { text-shadow: 0 0 30px #00ff99, 0 0 60px #00ffcc, 3px 3px 0 #003322; }
+  }
+
+  #victoryMsg {
+    font-size: 0.42rem;
+    color: rgba(0,255,153,0.6);
+    text-align: center;
+    line-height: 2.8;
+  }
+
+  #victoryScore {
+    font-size: 0.65rem;
+    color: #f0c040;
+    text-shadow: 2px 2px 0 #332200;
+  }
+
+  #victoryCycle {
+    font-size: 0.45rem;
+    color: #00ffcc;
+    letter-spacing: 2px;
+  }
+
+  #btnVictory {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.58rem;
+    padding: 12px 26px;
+    background: #00ff99;
+    color: #003322;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 2px;
+    box-shadow: 4px 4px 0 #009955;
+    transition: transform 0.08s;
+    margin-top: 6px;
+    animation: victoryBtnGlow 1s ease-in-out infinite alternate;
+  }
+  @keyframes victoryBtnGlow {
+    from { box-shadow: 4px 4px 0 #009955; }
+    to   { box-shadow: 4px 4px 0 #009955, 0 0 20px rgba(0,255,153,0.5); }
+  }
+  #btnVictory:hover  { transform: translate(-2px,-2px); }
+  #btnVictory:active { transform: translate(2px,2px); }
+
+  .trophy { font-size: 2.5rem; animation: trophySpin 2s ease-in-out infinite; }
+  @keyframes trophySpin {
+    0%,100% { transform: rotate(-8deg) scale(1); }
+    50%     { transform: rotate(8deg) scale(1.1); }
+  }
+</style>
+</head>
+<body>
+
+<h1>[ ミク · ESQUIVA HATERS ]</h1>
+
+<div id="hud">
+  <div>SCORE  <span id="scoreEl">0</span></div>
+  <div>RECORD <span id="recordEl">0</span></div>
+  <div>VIDAS  <span id="livesEl">❤❤❤</span></div>
+  <div>LVL    <span id="lvlEl">1</span></div>
+  <div id="shootBar">🧅<div id="shootBarBg"><div id="shootBarFill" style="width:100%"></div></div></div>
+  <div id="powerupHud" style="display:none">★ <span id="powerupEl"></span></div>
+  <button id="muteBtn">🔊 BGM</button>
+</div>
+
+<div id="gameWrap">
+  <canvas id="c" width="1000" height="380"></canvas>
+  <img id="mikuImg" src="/static/mikucorr.gif" alt="miku" style="display:none">
+
+  <div id="bossBar">
+    <div id="bossBarLabel">⚠ BOSS ⚠</div>
+    <div id="bossBarBg"><div id="bossBarFill" style="width:100%"></div></div>
+  </div>
+
+  <div id="nowPlaying"></div>
+
+  <div id="overlay">
+    <div id="overlayTitle">ミク · RUN!</div>
+    <div id="overlayMsg">
+      ESPACIO / ↑ → SALTAR &nbsp;|&nbsp; DOBLE SALTO ✨<br>
+      Z / CLICK DER → LANZAR PUERRO 🧅<br>
+      ESQUIVA TROLLFACES · RECOGE ITEMS<br>
+      CADA 500 PTS → BOSS 💀<br>
+      POWER-UPS: 🛡️ ESCUDO &nbsp;⚡ TURBO &nbsp;🌀 SUPER SALTO
+    </div>
+    <div id="scoreResult" style="display:none"></div>
+    <div id="recordLabel"  style="display:none"></div>
+    <button id="btnPlay">► JUGAR</button>
+  </div>
+
+  <!-- PANTALLA DE VICTORIA -->
+  <div id="victoryOverlay">
+    <div class="trophy">🏆</div>
+    <div id="victoryTitle">¡CICLO COMPLETO!</div>
+    <div id="victoryMsg">
+      DERROTASTE A TODOS LOS HATERS<br>
+      INCLUIDO EL GPT FINAL BOSS<br>
+      ¡MIKU ES IMPARABLE! 🎤
+    </div>
+    <div id="victoryScore"></div>
+    <div id="victoryCycle"></div>
+    <button id="btnVictory">► SIGUIENTE CICLO</button>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <a class="back-link" href="/dashprincipal">← TABLERO</a>
+  <span>Z = DISPARAR | ESPACIO = SALTAR</span>
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx    = canvas.getContext('2d');
+const W = 1000, H = 380;
+const GROUND_Y = H - 80;
+const mikuEl   = document.getElementById('mikuImg');
+
+// ── SPRITES ───────────────────────────────────────────────────────────────────
+const imgTroll     = new Image(); imgTroll.src     = '/static/troll.png';
+const imgLeek      = new Image(); imgLeek.src      = '/static/puerro.png';
+const imgGPT       = new Image(); imgGPT.src       = '/static/gpt.png';
+const imgTeto      = new Image(); imgTeto.src      = '/static/Teto.webp';
+const imgIluminati = new Image(); imgIluminati.src = '/static/iluminati.png';
+
+// ── AUDIO MANAGER ─────────────────────────────────────────────────────────────
+const TRACKS = {
+  main:      { src: '/static/Ievan Polkka8bit.mp3',  label: '♪ Ievan Polkka 8bit' },
+  troll:     { src: '/static/trollface8bit.mp3',     label: '♪ Trollface 8bit'    },
+  gpt:       { src: '/static/gpt8bit.mp3',           label: '♪ GPT 8bit'          },
+  teto:      { src: '/static/teto8bit.mp3',          label: '♪ Teto 8bit'         },
+  iluminati: { src: '/static/iluminati8bit.mp3',     label: '♪ Iluminati 8bit'    },
+};
+
+const audioEls = {};
+Object.entries(TRACKS).forEach(([key, t]) => {
+  const a = new Audio(t.src);
+  a.loop = true; a.volume = 0;
+  audioEls[key] = a;
+});
+
+let currentTrackKey = null;
+let muted = false;
+
+// cada audio tiene su propio timer independiente
+const fadeTicks = {};
+const VOL_TARGET = 0.55;
+
+function _stopFade(key) {
+  if (fadeTicks[key]) { clearInterval(fadeTicks[key]); fadeTicks[key] = null; }
+}
+
+function _fadeIn(key) {
+  _stopFade(key);
+  const a = audioEls[key];
+  fadeTicks[key] = setInterval(() => {
+    a.volume = Math.min(VOL_TARGET, a.volume + VOL_TARGET / 18);
+    if (a.volume >= VOL_TARGET) _stopFade(key);
+  }, 40);
+}
+
+function _fadeOut(key, cb, resetPos) {
+  _stopFade(key);
+  const a = audioEls[key];
+  fadeTicks[key] = setInterval(() => {
+    a.volume = Math.max(0, a.volume - VOL_TARGET / 18);
+    if (a.volume <= 0) {
+      _stopFade(key);
+      a.pause();
+      if (resetPos) a.currentTime = 0;
+      if (cb) cb();
+    }
+  }, 40);
+}
+
+function playTrack(key) {
+  if (key === currentTrackKey) return;
+  const prev = currentTrackKey;
+  currentTrackKey = key;
+
+  if (key === 'main') {
+    // reanudar main desde donde estaba pausado
+    if (prev) _fadeOut(prev, () => {
+      audioEls[prev].currentTime = 0; // resetear el boss
+      if (muted) return;
+      audioEls['main'].volume = 0;
+      audioEls['main'].play().catch(() => {});
+      _fadeIn('main');
+      _showNowPlaying('main');
+    }, false);
+    else {
+      if (muted) return;
+      audioEls['main'].volume = 0;
+      audioEls['main'].play().catch(() => {});
+      _fadeIn('main');
+      _showNowPlaying('main');
+    }
+  } else {
+    // pausar main SIN resetear posición, arrancar boss
+    if (prev === 'main') {
+      _fadeOut('main', () => {
+        // main queda pausado en su posición actual
+        if (muted) return;
+        audioEls[key].currentTime = 0;
+        audioEls[key].volume = 0;
+        audioEls[key].play().catch(() => {});
+        _fadeIn(key);
+        _showNowPlaying(key);
+      }, false); // false = NO resetear currentTime del main
+    } else {
+      if (prev) _fadeOut(prev, null, true);
+      if (muted) return;
+      audioEls[key].currentTime = 0;
+      audioEls[key].volume = 0;
+      audioEls[key].play().catch(() => {});
+      _fadeIn(key);
+      _showNowPlaying(key);
+    }
+  }
+}
+
+function _showNowPlaying(key) {
+  const np = document.getElementById('nowPlaying');
+  np.textContent = TRACKS[key].label; np.style.opacity = '1';
+  setTimeout(() => { np.style.opacity = '0'; }, 4000);
+}
+
+function stopAllAudio() {
+  Object.keys(audioEls).forEach(k => {
+    _stopFade(k);
+    audioEls[k].pause();
+    audioEls[k].currentTime = 0;
+    audioEls[k].volume = 0;
+  });
+  currentTrackKey = null;
+}
+
+document.getElementById('muteBtn').addEventListener('click', () => {
+  muted = !muted;
+  document.getElementById('muteBtn').textContent = muted ? '🔇 BGM' : '🔊 BGM';
+  if (muted) {
+    Object.keys(audioEls).forEach(k => { _stopFade(k); audioEls[k].volume = 0; });
+  } else if (currentTrackKey) {
+    _fadeIn(currentTrackKey);
+  }
+});
+
+// ── BOSS DEFS ─────────────────────────────────────────────────────────────────
+// Orden del ciclo: troll → teto → iluminati → GPT (boss final)
+const BOSS_DEFS = [
+  {
+    id:'troll', name:'⚠ TROLLFACE BOSS ⚠',
+    img:()=>imgTroll, track:'troll',
+    barColor:'linear-gradient(90deg,#e74c3c,#ff6b6b)',
+    barRageColor:'linear-gradient(90deg,#ff0000,#ff4444)',
+    labelColor:'#e74c3c', projColor:'#e74c3c', projRageColor:'#ff6b00',
+    hpBase:12,
+    // RÁFAGA: balas una por una en línea recta
+    attackType:'burst', burstCount:5, burstCountRage:7, burstDelay:9,
+    shootInterval:120, shootIntervalRage:90,
+    w:110, h:110, isFinal:false,
+  },
+  {
+    id:'teto', name:'⚠ TETO BOSS ⚠',
+    img:()=>imgTeto, track:'teto',
+    barColor:'linear-gradient(90deg,#e91e8c,#ff6eb4)',
+    barRageColor:'linear-gradient(90deg,#c2185b,#e91e8c)',
+    labelColor:'#ff6eb4', projColor:'#ff6eb4', projRageColor:'#ff00aa',
+    hpBase:15,
+    // LLUVIA: notas musicales cayendo desde arriba
+    attackType:'rain', rainCount:4, rainCountRage:6,
+    shootInterval:110, shootIntervalRage:75,
+    w:95, h:110, isFinal:false,
+  },
+  {
+    id:'iluminati', name:'⚠ ILLUMINATI BOSS ⚠',
+    img:()=>imgIluminati, track:'iluminati',
+    barColor:'linear-gradient(90deg,#f39c12,#f1c40f)',
+    barRageColor:'linear-gradient(90deg,#e67e22,#f39c12)',
+    labelColor:'#f1c40f', projColor:'#f1c40f', projRageColor:'#ff8800',
+    hpBase:18,
+    // REBOTE: proyectiles que rebotan en suelo y techo
+    attackType:'bounce',
+    shootInterval:130, shootIntervalRage:95,
+    w:120, h:120, isFinal:false,
+  },
+  {
+    id:'gpt', name:'★ GPT FINAL BOSS ★',
+    img:()=>imgGPT, track:'gpt',
+    barColor:'linear-gradient(90deg,#00b894,#2ecc71,#00cec9)',
+    barRageColor:'linear-gradient(90deg,#00ff88,#00ffcc,#00b894)',
+    labelColor:'#00ff99', projColor:'#00ff99', projRageColor:'#00ffcc',
+    hpBase:28,
+    // LÁSER: barra horizontal que cruza la pantalla, hay que saltar
+    attackType:'laser',
+    shootInterval:160, shootIntervalRage:110,
+    w:175, h:175, isFinal:true,
+  },
+];
+
+let bossIndex = 0;
+
+// variables globales para ataques especiales
+let bossBurstQueue = 0;   // ráfaga pendiente (troll)
+let bossBurstTimer = 0;
+let bossLaser      = null; // { y, timer, warning, col }
+let bossLaserWarn  = 0;
+
+// ── ESTADO ────────────────────────────────────────────────────────────────────
+let state = 'idle';
+let score, lives, level, speed, frame, spawnTimer, leekTimer, flashTimer;
+let miku, obstacles, leeks, projectiles, particles, powerups;
+let bossActive, boss, bossProjectiles, currentBossDef;
+let nextBossAt = 500;
+
+let record = parseInt(localStorage.getItem('mikuRunV3') || '0');
+document.getElementById('recordEl').textContent = record;
+
+function scaleX(px) { return px * (canvas.clientWidth  / W); }
+function scaleY(px) { return px * (canvas.clientHeight / H); }
+
+// ── CIUDAD ────────────────────────────────────────────────────────────────────
+const BLDS = [];
+function buildCity() {
+  BLDS.length = 0;
+  const pal = ['#080f20','#0a1525','#060e1c','#091320'];
+  let x = 0;
+  while (x < W*3) {
+    const bw=28+(Math.random()*65|0), bh=38+(Math.random()*115|0);
+    const wins=[];
+    for(let wy=8;wy<bh-12;wy+=14)
+      for(let wx=5;wx<bw-7;wx+=14)
+        wins.push({wx,wy,lit:Math.random()>0.42,col:Math.random()>0.5?'#39c5bb':'#1ba8a0'});
+    BLDS.push({x,bw,bh,col:pal[Math.random()*pal.length|0],wins});
+    x+=bw+3+(Math.random()*6|0);
+  }
+}
+buildCity();
+let bgOff=0;
+const CITY_W=BLDS.reduce((s,b)=>s+b.bw+3,0);
+
+function drawCity(spd) {
+  bgOff=(bgOff+spd*0.14)%CITY_W;
+  ctx.save(); ctx.translate(-bgOff,0);
+  for(let rep=-1;rep<=1;rep++) {
+    BLDS.forEach(b=>{
+      const bx=b.x+rep*CITY_W, by=GROUND_Y-b.bh;
+      ctx.fillStyle=b.col; ctx.fillRect(bx,by,b.bw,b.bh);
+      ctx.fillStyle='rgba(57,197,187,0.1)'; ctx.fillRect(bx,by,b.bw,2);
+      b.wins.forEach(w=>{if(w.lit){ctx.fillStyle=w.col;ctx.fillRect(bx+w.wx,by+w.wy,5,5);}});
+    });
+  }
+  ctx.restore();
+}
+
+// ── PARTÍCULAS ────────────────────────────────────────────────────────────────
+function spawnParticles(x,y,col,n,spread) {
+  spread=spread||7;
+  for(let i=0;i<n;i++)
+    particles.push({x,y,vx:(Math.random()-0.5)*spread,vy:-Math.random()*5-1,
+      life:1,decay:0.03+Math.random()*0.025,col,sz:3+(Math.random()*5|0)});
+}
+
+// ── POWERUPS ──────────────────────────────────────────────────────────────────
+const POWERUP_TYPES=[
+  {id:'shield', label:'🛡️ ESCUDO',   color:'#3498db', duration:300},
+  {id:'turbo',  label:'⚡ TURBO',    color:'#f0c040', duration:240},
+  {id:'jump',   label:'🌀 SUPERJUMP',color:'#9b59b6', duration:200},
+  {id:'life',   label:'❤ VIDA EXTRA',color:'#ff4466', duration:0},  // sin timer, efecto instantáneo
+];
+const SHOOT_CD_MAX=28;
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+function initGame() {
+  score=0;lives=3;level=1;speed=4;
+  frame=0;spawnTimer=70;leekTimer=100;flashTimer=0;
+  obstacles=[];leeks=[];projectiles=[];particles=[];powerups=[];
+  bossProjectiles=[];bossActive=false;boss=null;
+  nextBossAt=500;bossIndex=0;currentBossDef=null;
+
+  miku={x:90,y:GROUND_Y,w:56,h:72,vy:0,onGround:true,doubleUsed:false,
+    invincible:0,shield:false,turbo:false,superjump:false,
+    powerupTimer:0,powerupType:null,shootCooldown:0,
+    speedBeforeTurbo:4};  // fix: guardar velocidad pre-turbo
+
+  mikuEl.style.display='block';
+  updateMikuEl(); updateHUD(); updateShootBar();
+  document.getElementById('bossBar').style.display='none';
+  document.getElementById('bossBarBg').classList.remove('final-boss-bar');
+}
+
+function updateMikuEl() {
+  mikuEl.style.left  =scaleX(miku.x)+'px';
+  mikuEl.style.top   =scaleY(miku.y)+'px';
+  mikuEl.style.width =scaleX(miku.w)+'px';
+  mikuEl.style.height=scaleY(miku.h)+'px';
+  mikuEl.style.opacity=(miku.invincible>0&&Math.floor(miku.invincible/6)%2===0)?'0.15':'1';
+  if(miku.shield)         mikuEl.style.filter='drop-shadow(0 0 8px #3498db)';
+  else if(miku.turbo)     mikuEl.style.filter='drop-shadow(0 0 8px #f0c040)';
+  else if(miku.superjump) mikuEl.style.filter='drop-shadow(0 0 8px #9b59b6)';
+  else                    mikuEl.style.filter='';
+}
+
+function updateShootBar() {
+  const pct=miku?Math.max(0,1-miku.shootCooldown/SHOOT_CD_MAX)*100:100;
+  const fill=document.getElementById('shootBarFill');
+  fill.style.width=pct+'%';
+  fill.style.background=pct>=100?'#2ecc71':'#e74c3c';
+  fill.style.boxShadow =pct>=100?'0 0 4px #2ecc71':'0 0 4px #e74c3c';
+}
+
+function updateHUD() {
+  document.getElementById('scoreEl').textContent =score;
+  document.getElementById('recordEl').textContent=record;
+  document.getElementById('livesEl').textContent ='❤'.repeat(Math.max(0,lives));
+  document.getElementById('lvlEl').textContent   =level;
+  if(miku&&miku.powerupType){
+    document.getElementById('powerupHud').style.display='block';
+    const t=POWERUP_TYPES.find(p=>p.id===miku.powerupType);
+    document.getElementById('powerupEl').textContent=t?t.label:'';
+  } else document.getElementById('powerupHud').style.display='none';
+}
+
+// ── SPAWNERS ──────────────────────────────────────────────────────────────────
+function getSpawnInterval(){return Math.max(30,90-level*5);}
+function getLeekInterval() {return Math.max(80,200-level*10);}
+
+function spawnObstacle() {
+  if(bossActive) return;
+  const roll=Math.random();
+  if(level>=4&&roll<0.22){
+    obstacles.push({x:W+10,y:GROUND_Y,   w:50,h:50,hp:1});
+    obstacles.push({x:W+95,y:GROUND_Y,   w:50,h:50,hp:1});
+  } else if(level>=2&&roll<0.44){
+    obstacles.push({x:W+10,y:GROUND_Y-26,w:50,h:76,hp:1});
+  } else {
+    obstacles.push({x:W+10,y:GROUND_Y,   w:50,h:50,hp:1});
+  }
+}
+function spawnLeek(){
+  const baseY=GROUND_Y-28-(Math.random()*80|0);
+  leeks.push({x:W+10,baseY,y:baseY,w:42,h:42,bob:Math.random()*Math.PI*2,done:false});
+}
+function spawnPowerup(){
+  const type=POWERUP_TYPES[Math.random()*POWERUP_TYPES.length|0];
+  powerups.push({x:W+10,baseY:GROUND_Y-50-(Math.random()*60|0),y:0,w:36,h:36,
+    bob:Math.random()*Math.PI*2,type,done:false});
+}
+
+// ── BOSS SPAWN ────────────────────────────────────────────────────────────────
+function spawnBoss() {
+  bossActive=true; state='boss'; obstacles=[];
+  currentBossDef=BOSS_DEFS[bossIndex%BOSS_DEFS.length];
+  bossIndex++;
+  const def=currentBossDef;
+
+  const finalOffset = def.isFinal ? 30 : 0;
+  const bossY       = def.isFinal ? GROUND_Y - def.h + 30 : GROUND_Y - 40;
+
+  boss={
+    x:W+10, targetX:W-170-finalOffset, y:bossY,
+    w:def.w, h:def.h,
+    hp:def.hpBase+level*2, maxHp:def.hpBase+level*2,
+    phase:'enter', shootTimer:0, vy:0, hitFlash:0, chargeTimer:0,
+  };
+
+  // reset variables de ataques especiales
+  bossBurstQueue=0; bossBurstTimer=0;
+  bossLaser=null;   bossLaserWarn=0;
+
+  const label=document.getElementById('bossBarLabel');
+  label.textContent=def.name;
+  label.style.color=def.labelColor;
+  label.style.textShadow=`0 0 8px ${def.labelColor}`;
+  label.style.fontSize = def.isFinal ? '0.5rem' : '0.38rem';
+
+  const barBg = document.getElementById('bossBarBg');
+  if(def.isFinal) barBg.classList.add('final-boss-bar');
+  else            barBg.classList.remove('final-boss-bar');
+
+  document.getElementById('bossBarFill').style.background=def.barColor;
+  document.getElementById('bossBar').style.display='block';
+  updateBossBar();
+
+  spawnParticles(W/2,H/2,def.projColor,30,12);
+  if(def.isFinal){
+    spawnParticles(W/2,H/2,'#00ff99',50,15);
+    spawnParticles(W/2,H/3,'#ffffff',30,10);
+    spawnParticles(W/4,H/2,'#00ffcc',25,12);
+    spawnParticles(3*W/4,H/2,'#00ff99',25,12);
+  }
+
+  playTrack(def.track);
+}
+
+function updateBossBar(){
+  const pct=Math.max(0,boss.hp/boss.maxHp*100);
+  document.getElementById('bossBarFill').style.width=pct+'%';
+  document.getElementById('bossBarFill').style.background=
+    pct<30?currentBossDef.barRageColor:currentBossDef.barColor;
+}
+
+function bossShoot(){
+  const def=currentBossDef;
+  const isRage=boss.hp<boss.maxHp*0.3;
+  const col=isRage?def.projRageColor:def.projColor;
+
+  if(def.attackType==='burst'){
+    // TROLL: encola ráfaga de balas rectas apuntando a Miku
+    bossBurstQueue = isRage ? def.burstCountRage : def.burstCount;
+    bossBurstTimer = 0;
+
+  } else if(def.attackType==='rain'){
+    // TETO: notas desde la derecha a 2 alturas — baja (hay que saltar) o alta (quedarse)
+    const count = isRage ? def.rainCountRage : def.rainCount;
+    const col = isRage ? def.projRageColor : def.projColor;
+    for(let i=0;i<count;i++){
+      // alterna: par = altura baja (hay que saltar), impar = altura alta (quedarse quieto)
+      const ry = i%2===0 ? GROUND_Y+10 : GROUND_Y-90;
+      bossProjectiles.push({
+        type:'rain',
+        x: W + 10 + i*60,  // escalonadas para dar tiempo a reaccionar
+        y: ry,
+        vx: -(3.5 + Math.random()*1),
+        vy: 0,
+        r:11, life:1, col,
+      });
+    }
+
+  } else if(def.attackType==='bounce'){
+    // ILUMINATI: proyectiles que rebotan en suelo y techo
+    const isRage = boss.hp<boss.maxHp*0.3;
+    const col = isRage ? def.projRageColor : def.projColor;
+    const count = isRage ? 3 : 2;
+    for(let i=0;i<count;i++){
+      const vyDir = i%2===0 ? 1 : -1; // alternos arriba/abajo
+      bossProjectiles.push({
+        type:'bounce',
+        x: boss.x, y: boss.y + boss.h*0.3 + i*30,
+        vx: -(4.5 + Math.random()*1.5),
+        vy: vyDir * (2 + Math.random()*1.5),
+        r: 9, life: 1, col,
+        bounces: 0, maxBounces: 6,
+      });
+    }
+
+  } else if(def.attackType==='laser'){
+    // GPT: avisa primero, luego activa el láser
+    bossLaserWarn = 60; // frames de advertencia
+  }
+}
+
+// ── SALTO / DISPARO ───────────────────────────────────────────────────────────
+function jump(){
+  if(state!=='playing'&&state!=='boss') return;
+  const jp=miku.superjump?-17:-14, dp=miku.superjump?-14:-11.5;
+  if(miku.onGround){
+    miku.vy=jp;miku.onGround=false;miku.doubleUsed=false;
+    spawnParticles(miku.x+miku.w/2,miku.y+miku.h,'#39c5bb',8);
+  } else if(!miku.doubleUsed){
+    miku.vy=dp;miku.doubleUsed=true;
+    spawnParticles(miku.x+miku.w/2,miku.y+miku.h/2,'#5dd9d0',12);
+  }
+}
+function shoot(){
+  if(state!=='playing'&&state!=='boss') return;
+  if(miku.shootCooldown>0) return;
+  const spd=miku.turbo?14:10;
+  projectiles.push({x:miku.x+miku.w,y:miku.y+miku.h/2-8,w:28,h:18,vx:spd,life:1});
+  miku.shootCooldown=miku.turbo?Math.floor(SHOOT_CD_MAX*0.4):SHOOT_CD_MAX;
+  spawnParticles(miku.x+miku.w,miku.y+miku.h/2,'#2ecc71',4,4);
+}
+
+function overlaps(a,b,m){
+  m=m||10;
+  return a.x+m<b.x+b.w-m&&a.x+a.w-m>b.x+m&&a.y+m<b.y+b.h-m&&a.y+a.h-m>b.y+m;
+}
+
+function hitMiku(fromProj){
+  if(miku.shield){
+    miku.shield=false;miku.powerupType=null;miku.powerupTimer=0;miku.invincible=60;
+    spawnParticles(miku.x+miku.w/2,miku.y+miku.h/2,'#3498db',18);
+    updateHUD();if(fromProj)fromProj.life=0;
+  } else {
+    lives--;miku.invincible=90;flashTimer=18;
+    spawnParticles(miku.x+miku.w/2,miku.y+miku.h/2,'#e74c3c',16);
+    updateHUD();if(fromProj)fromProj.life=0;
+    if(lives<=0){state='dead';showGameOver();return true;}
+  }
+  return false;
+}
+
+// ── UPDATE ────────────────────────────────────────────────────────────────────
+function update(){
+  frame++;
+  if(flashTimer>0)flashTimer--;
+
+  const newLvl=1+Math.floor(score/200);
+  if(newLvl>level){level=newLvl;speed=4+(level-1)*0.6;spawnParticles(W/2,H/2,'#f0c040',20);updateHUD();}
+
+  if(!bossActive&&score>=nextBossAt) spawnBoss();
+
+  if(miku.powerupTimer>0){
+    miku.powerupTimer--;
+    if(miku.powerupTimer===0){
+      // fix: restaurar velocidad al expirar turbo
+      if(miku.turbo) speed = miku.speedBeforeTurbo;
+      miku.shield=false;miku.turbo=false;miku.superjump=false;miku.powerupType=null;
+      updateHUD();
+    }
+  }
+  if(miku.shootCooldown>0)miku.shootCooldown--;
+  updateShootBar();
+
+  miku.vy+=0.72;miku.y+=miku.vy;
+  if(miku.y>=GROUND_Y){miku.y=GROUND_Y;miku.vy=0;miku.onGround=true;miku.doubleUsed=false;}
+  if(miku.invincible>0)miku.invincible--;
+  updateMikuEl();
+
+  if(bossActive&&boss){updateBoss();return;}
+
+  spawnTimer--;if(spawnTimer<=0){spawnObstacle();spawnTimer=getSpawnInterval();}
+  leekTimer--;if(leekTimer<=0){spawnLeek();leekTimer=getLeekInterval();}
+  if(frame%(380+Math.random()*240|0)===0)spawnPowerup();
+
+  obstacles.forEach(o=>o.x-=speed);
+  obstacles=obstacles.filter(o=>o.x>-70);
+  leeks.forEach(l=>{l.x-=speed*0.85;l.y=l.baseY+Math.sin(frame*0.09+l.bob)*10;});
+  leeks=leeks.filter(l=>l.x>-60&&!l.done);
+  powerups.forEach(p=>{p.x-=speed*0.7;p.y=p.baseY+Math.sin(frame*0.08+p.bob)*10;});
+  powerups=powerups.filter(p=>p.x>-50&&!p.done);
+
+  projectiles.forEach(p=>p.x+=p.vx);
+  for(const proj of [...projectiles]){
+    for(let i=obstacles.length-1;i>=0;i--){
+      if(overlaps(proj,obstacles[i],2)){
+        obstacles[i].hp--;spawnParticles(proj.x,proj.y,'#2ecc71',8);proj.life=0;
+        if(obstacles[i].hp<=0){spawnParticles(obstacles[i].x+25,obstacles[i].y+25,'#e74c3c',14);obstacles.splice(i,1);score+=5;}
+        break;
+      }
+    }
+  }
+  projectiles=projectiles.filter(p=>p.life>0&&p.x<W+40);
+
+  if(miku.invincible===0)
+    for(const o of obstacles)
+      if(overlaps(miku,o,12)){if(hitMiku(null))return;break;}
+
+  for(const l of leeks)
+    if(!l.done&&overlaps(miku,l,6)){l.done=true;score+=10;spawnParticles(l.x+l.w/2,l.y+l.h/2,'#2ecc71',14);updateHUD();}
+
+  for(const p of powerups)
+    if(!p.done&&overlaps(miku,p,4)){p.done=true;applyPowerup(p.type);spawnParticles(p.x+p.w/2,p.y+p.h/2,p.type.color,16);}
+
+  if(frame%6===0){score++;updateHUD();}
+
+  particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.18;p.life-=p.decay;});
+  particles=particles.filter(p=>p.life>0);
+}
+
+function applyPowerup(type){
+  if(type.id==='life'){
+    // Instantáneo: suma una vida y no toca timers
+    lives++;
+    spawnParticles(miku.x+miku.w/2, miku.y+miku.h/2, '#ff4466', 22, 8);
+    spawnParticles(miku.x+miku.w/2, miku.y,           '#ffffff', 12, 6);
+    updateHUD();
+    return;
+  }
+  // fix: guardar velocidad antes de aplicar turbo
+  if(type.id==='turbo') miku.speedBeforeTurbo = speed;
+  miku.shield=type.id==='shield';miku.turbo=type.id==='turbo';miku.superjump=type.id==='jump';
+  miku.powerupType=type.id;miku.powerupTimer=type.duration;
+  if(type.id==='turbo')speed=Math.min(speed+2,12);
+  updateHUD();
+}
+
+// ── BOSS UPDATE ───────────────────────────────────────────────────────────────
+function updateBoss(){
+  if(!boss)return;
+  const def=currentBossDef;
+  const isRage=boss.hp<boss.maxHp*0.3;
+  if(boss.hitFlash>0)boss.hitFlash--;
+
+  if(boss.phase==='enter'){
+    boss.x -= def.isFinal ? 2 : 3;
+    if(boss.x<=boss.targetX){boss.x=boss.targetX;boss.phase='fight';}
+    updateBossBar();return;
+  }
+
+  if(isRage&&boss.phase!=='rage'){
+    boss.phase='rage';
+    spawnParticles(boss.x+boss.w/2,boss.y+boss.h/2,def.projRageColor,25,10);
+    if(def.isFinal) spawnParticles(boss.x+boss.w/2,boss.y+boss.h/2,'#ffffff',40,16);
+  }
+
+  // física del boss
+  const gravity   = def.isFinal ? 0.6 : 0.5;
+  const jumpVel   = def.isFinal ? -13 : -10;
+  const jumpFloor = def.isFinal ? GROUND_Y-def.h+30 : GROUND_Y-30;
+  const jumpEvery = isRage ? (def.isFinal?80:110) : (def.isFinal?120:160);
+
+  boss.vy+=gravity; boss.y+=boss.vy;
+  if(boss.y>=jumpFloor){boss.y=jumpFloor;boss.vy=0;}
+  boss.chargeTimer++;
+  if(boss.chargeTimer>=jumpEvery){
+    boss.vy=jumpVel; boss.chargeTimer=0;
+    spawnParticles(boss.x+boss.w/2,boss.y+boss.h,def.projColor,8);
+  }
+
+  // disparo según intervalo
+  boss.shootTimer++;
+  const shootInt=isRage?def.shootIntervalRage:def.shootInterval;
+  if(boss.shootTimer>=shootInt){bossShoot();boss.shootTimer=0;}
+
+  // ── TROLL: procesar ráfaga bala por bala ──────────────────────────────────
+  if(def.attackType==='burst'&&bossBurstQueue>0){
+    bossBurstTimer++;
+    if(bossBurstTimer>=def.burstDelay){
+      bossBurstTimer=0; bossBurstQueue--;
+      const dx=miku.x-boss.x, dy=(miku.y+miku.h/2)-(boss.y+boss.h/2);
+      const dist=Math.sqrt(dx*dx+dy*dy)||1;
+      const col=isRage?def.projRageColor:def.projColor;
+      bossProjectiles.push({
+        type:'bullet',
+        x:boss.x, y:boss.y+boss.h/2,
+        vx:(dx/dist)*5.5, vy:(dy/dist)*5.5,
+        r:8, life:1, col,
+      });
+    }
+  }
+
+  // ── GPT: warning y activación del láser ──────────────────────────────────
+  if(def.attackType==='laser'){
+    if(bossLaserWarn>0){
+      bossLaserWarn--;
+      if(bossLaserWarn===0){
+        bossLaser={ y:GROUND_Y+28, timer:40, col:isRage?def.projRageColor:def.projColor };
+      }
+    }
+    if(bossLaser){
+      bossLaser.timer--;
+      if(bossLaser.timer<=0){ bossLaser=null; }
+      else if(miku.invincible===0){
+        if(miku.y+miku.h>bossLaser.y && miku.y<bossLaser.y+14){
+          if(hitMiku(null))return;
+        }
+      }
+    }
+  }
+
+  // ── BOUNCE: rebotar proyectiles en suelo y techo ─────────────────────────
+  bossProjectiles.forEach(p=>{
+    if(p.type==='bounce'){
+      p.x+=p.vx; p.y+=p.vy;
+      // rebote en suelo
+      if(p.y >= GROUND_Y+60){ p.y=GROUND_Y+60; p.vy=-Math.abs(p.vy); p.bounces++; }
+      // rebote en techo
+      if(p.y <= 10){ p.y=10; p.vy=Math.abs(p.vy); p.bounces++; }
+      // después de maxBounces rebotas, muere
+      if(p.bounces>=p.maxBounces) p.life=0;
+    } else {
+      p.x+=p.vx; p.y+=p.vy;
+    }
+  });
+  bossProjectiles=bossProjectiles.filter(p=>p.x>-40&&p.x<W+40&&p.y<H+40&&p.y>-80&&p.life>0);
+
+  // colisión proyectiles boss → Miku
+  if(miku.invincible===0){
+    for(const bp of bossProjectiles){
+      const dx=(miku.x+miku.w/2)-bp.x, dy=(miku.y+miku.h/2)-bp.y;
+      if(Math.sqrt(dx*dx+dy*dy)<bp.r+16){if(hitMiku(bp))return;break;}
+    }
+  }
+
+  // proyectiles Miku → boss
+  for(let i=projectiles.length-1;i>=0;i--){
+    const proj=projectiles[i]; proj.x+=proj.vx;
+    if(overlaps(proj,boss,4)){
+      boss.hp--;boss.hitFlash=8;projectiles.splice(i,1);
+      spawnParticles(proj.x,proj.y,'#2ecc71',8);score+=3;updateBossBar();updateHUD();
+      if(boss.hp<=0){defeatBoss();return;}
+    }
+  }
+  projectiles=projectiles.filter(p=>p.x<W+40);
+  if(miku.invincible===0&&overlaps(miku,boss,14))hitMiku(null);
+
+  particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.18;p.life-=p.decay;});
+  particles=particles.filter(p=>p.life>0);
+}
+
+function defeatBoss(){
+  const def=currentBossDef;
+  spawnParticles(boss.x+boss.w/2,boss.y+boss.h/2,def.projColor,40,12);
+  spawnParticles(boss.x+boss.w/2,boss.y+boss.h/2,'#f0c040',30,10);
+
+  if(def.isFinal){
+    // explosión épica
+    spawnParticles(boss.x+boss.w/2,boss.y+boss.h/2,'#ffffff',60,18);
+    spawnParticles(boss.x+boss.w/2,boss.y+boss.h/3,'#00ff99',50,15);
+    spawnParticles(W/4,H/2,'#00ffcc',30,12);
+    spawnParticles(3*W/4,H/2,'#00ffcc',30,12);
+    score+=200;
+    updateHUD();
+
+    // mostrar pantalla de victoria después de 1.2s (para que se vean las partículas)
+    bossActive=false; boss=null; bossProjectiles=[];
+    state='victory';
+    document.getElementById('bossBar').style.display='none';
+    document.getElementById('bossBarBg').classList.remove('final-boss-bar');
+    mikuEl.style.display='none';
+    stopAllAudio();
+
+    setTimeout(()=>{
+      const cycleNum = Math.floor(bossIndex / BOSS_DEFS.length);
+      document.getElementById('victoryScore').textContent  = 'SCORE: ' + score;
+      document.getElementById('victoryCycle').textContent  = 'CICLO ' + cycleNum + ' COMPLETADO ★';
+      document.getElementById('victoryOverlay').classList.add('show');
+    }, 1200);
+
+  } else {
+    score+=100;
+    bossActive=false; boss=null; bossProjectiles=[];
+    state='playing'; nextBossAt=score+500;
+    document.getElementById('bossBar').style.display='none';
+    document.getElementById('bossBarBg').classList.remove('final-boss-bar');
+    spawnTimer=100; updateHUD();
+    playTrack('main');
+  }
+}
+
+// ── DRAW ──────────────────────────────────────────────────────────────────────
+function draw(){
+  ctx.fillStyle='#060d18';ctx.fillRect(0,0,W,H);
+  drawCity(bossActive&&boss&&boss.phase!=='enter'?speed*0.3:speed);
+
+  // Overlay verde muy sutil durante el boss final
+  if(bossActive&&currentBossDef&&currentBossDef.isFinal){
+    const pulse=0.5+Math.sin(frame*0.04)*0.5;
+    ctx.fillStyle=`rgba(0,255,153,${0.018+pulse*0.012})`;
+    ctx.fillRect(0,0,W,H);
+  }
+
+  if(flashTimer>0&&flashTimer%4<2){ctx.fillStyle='rgba(231,76,60,0.18)';ctx.fillRect(0,0,W,H);}
+
+  ctx.fillStyle='#081220';ctx.fillRect(0,GROUND_Y+72,W,H-GROUND_Y-72);
+  ctx.fillStyle='#39c5bb';ctx.fillRect(0,GROUND_Y+72,W,2);
+  ctx.fillStyle='rgba(57,197,187,0.18)';
+  for(let gx=W-(frame*speed*0.6|0)%40;gx<W;gx+=40)ctx.fillRect(gx,GROUND_Y+75,20,2);
+
+  leeks.forEach(l=>{
+    if(imgLeek.complete&&imgLeek.naturalWidth>0){
+      ctx.save();
+      if(Math.sin(frame*0.12+l.bob)>0)ctx.filter='brightness(1.4) drop-shadow(0 0 5px #2ecc71)';
+      ctx.drawImage(imgLeek,l.x|0,l.y|0,l.w,l.h);ctx.restore();
+    } else {ctx.fillStyle='#2ecc71';ctx.fillRect(l.x|0,l.y|0,l.w,l.h);}
+  });
+
+  powerups.forEach(p=>{
+    ctx.save();ctx.shadowColor=p.type.color;ctx.shadowBlur=12+Math.sin(frame*0.1+p.bob)*4;
+    ctx.font='26px serif';
+    const icon = p.type.id==='shield'?'🛡️'
+               : p.type.id==='turbo' ?'⚡'
+               : p.type.id==='jump'  ?'🌀'
+               :                      '❤️';  // vida extra
+    ctx.fillText(icon, p.x|0, (p.y+p.h)|0);
+    ctx.restore();
+  });
+
+  obstacles.forEach(o=>{
+    if(imgTroll.complete&&imgTroll.naturalWidth>0){
+      ctx.save();
+      if(Math.floor(frame/15)%2===0)ctx.filter='brightness(1.3) drop-shadow(0 0 6px #e74c3c)';
+      ctx.drawImage(imgTroll,o.x|0,o.y|0,o.w,o.h);ctx.restore();
+    } else {ctx.fillStyle='#e74c3c';ctx.fillRect(o.x|0,o.y|0,o.w,o.h);}
+  });
+
+  if(bossActive&&boss){
+    const def=currentBossDef;
+    const bImg=def.img();
+
+    // ── Aura pulsante exclusiva del boss final ────────────────────────────────
+    if(def.isFinal){
+      const pulse=0.5+Math.sin(frame*0.08)*0.5;
+      const outerPulse=0.5+Math.sin(frame*0.05+1)*0.5;
+
+      // Anillo exterior
+      ctx.save();
+      ctx.strokeStyle=`rgba(0,255,153,${0.12+outerPulse*0.18})`;
+      ctx.lineWidth=6;
+      ctx.shadowColor='#00ff99';
+      ctx.shadowBlur=20+outerPulse*15;
+      ctx.beginPath();
+      ctx.ellipse(
+        boss.x+boss.w/2, boss.y+boss.h/2,
+        boss.w/2+28+outerPulse*10,
+        boss.h/2+28+outerPulse*10,
+        0,0,Math.PI*2
+      );
+      ctx.stroke();
+      ctx.restore();
+
+      // Anillo interior
+      ctx.save();
+      ctx.strokeStyle=`rgba(0,255,204,${0.25+pulse*0.35})`;
+      ctx.lineWidth=3;
+      ctx.shadowColor='#00ffcc';
+      ctx.shadowBlur=14+pulse*12;
+      ctx.beginPath();
+      ctx.ellipse(
+        boss.x+boss.w/2, boss.y+boss.h/2,
+        boss.w/2+10+pulse*6,
+        boss.h/2+10+pulse*6,
+        0,0,Math.PI*2
+      );
+      ctx.stroke();
+      ctx.restore();
+
+      // Partículas de aura continuas (1 por frame en rage, 1 cada 3 en fight)
+      if(boss.phase==='rage'||(frame%3===0)){
+        const angle=Math.random()*Math.PI*2;
+        const rad=boss.w/2+14+Math.random()*20;
+        spawnParticles(
+          boss.x+boss.w/2+Math.cos(angle)*rad,
+          boss.y+boss.h/2+Math.sin(angle)*rad,
+          boss.phase==='rage'?'#00ffcc':'#00ff99',
+          1, 2
+        );
+      }
+    }
+
+    // ── Sprite del boss ───────────────────────────────────────────────────────
+    ctx.save();
+    if(boss.hitFlash>0)
+      ctx.filter='brightness(3) saturate(0)';
+    else if(boss.phase==='rage')
+      ctx.filter=`brightness(1.4) drop-shadow(0 0 12px ${def.projRageColor})`;
+    else if(def.isFinal)
+      ctx.filter=`brightness(1.2) drop-shadow(0 0 16px ${def.projColor})`;
+    else
+      ctx.filter=`brightness(1.1) drop-shadow(0 0 8px ${def.projColor})`;
+
+    if(bImg.complete&&bImg.naturalWidth>0){
+      ctx.drawImage(bImg,boss.x|0,boss.y|0,boss.w,boss.h);
+    } else {
+      ctx.fillStyle=def.projColor;ctx.fillRect(boss.x|0,boss.y|0,boss.w,boss.h);
+    }
+    ctx.restore();
+
+    // ── Láser de GPT ─────────────────────────────────────────────────────────
+    if(def.attackType==='laser'){
+      if(bossLaserWarn>0){
+        ctx.save();
+        ctx.globalAlpha=0.25+Math.sin(frame*0.5)*0.2;
+        ctx.fillStyle='#00ff99';
+        ctx.fillRect(0,GROUND_Y+28,W,14);
+        ctx.globalAlpha=1;
+        ctx.fillStyle='#00ff99';
+        ctx.font='9px "Press Start 2P"';
+        ctx.textAlign='center';
+        ctx.shadowColor='#00ff99'; ctx.shadowBlur=8;
+        ctx.fillText('!! SALTA !!', W/2, GROUND_Y+22);
+        ctx.textAlign='left'; ctx.shadowBlur=0;
+        ctx.restore();
+      }
+      if(bossLaser){
+        ctx.save();
+        ctx.fillStyle=bossLaser.col;
+        ctx.shadowColor=bossLaser.col; ctx.shadowBlur=22;
+        ctx.globalAlpha=0.9;
+        ctx.fillRect(0,bossLaser.y,W,14);
+        ctx.globalAlpha=1; ctx.restore();
+      }
+    }
+
+    // ── Proyectiles por tipo ──────────────────────────────────────────────────
+    bossProjectiles.forEach(bp=>{
+      ctx.save();
+      ctx.shadowColor=bp.col; ctx.shadowBlur=10;
+      if(bp.type==='rain'){
+        // nota musical volando desde la derecha
+        ctx.save();
+        ctx.translate(bp.x|0, bp.y|0);
+        ctx.rotate(Math.atan2(bp.vy, bp.vx));
+        ctx.fillStyle=bp.col;
+        ctx.shadowColor=bp.col; ctx.shadowBlur=8;
+        ctx.font='22px serif';
+        ctx.fillText('♪', -8, 8);
+        ctx.restore();
+      } else if(bp.type==='bounce'){
+        // triángulo iluminati con ojo
+        ctx.save();
+        ctx.fillStyle=bp.col; ctx.shadowColor=bp.col; ctx.shadowBlur=10;
+        ctx.beginPath();
+        ctx.moveTo(bp.x,       bp.y-bp.r);
+        ctx.lineTo(bp.x+bp.r,  bp.y+bp.r*0.7);
+        ctx.lineTo(bp.x-bp.r,  bp.y+bp.r*0.7);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle='#000';
+        ctx.beginPath(); ctx.arc(bp.x, bp.y+bp.r*0.1, bp.r*0.32, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle='rgba(255,220,0,0.9)';
+        ctx.beginPath(); ctx.arc(bp.x, bp.y+bp.r*0.1, bp.r*0.14, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+      } else {
+        // bala normal (troll / cualquier otro)
+        ctx.fillStyle=bp.col;
+        ctx.beginPath(); ctx.arc(bp.x|0,bp.y|0,bp.r,0,Math.PI*2); ctx.fill();
+        if(def.isFinal){
+          ctx.fillStyle='rgba(255,255,255,0.7)';
+          ctx.beginPath(); ctx.arc(bp.x|0,bp.y|0,bp.r*0.35,0,Math.PI*2); ctx.fill();
+        }
+      }
+      ctx.restore();
+    });
+
+    // ── HP label ──────────────────────────────────────────────────────────────
+    ctx.fillStyle=def.labelColor;
+    ctx.font=def.isFinal?'10px "Press Start 2P"':'8px "Press Start 2P"';
+    ctx.fillText(`HP ${boss.hp}/${boss.maxHp}`,boss.x|0,(boss.y-6)|0);
+
+    // ── Texto FINAL BOSS sobre el sprite ─────────────────────────────────────
+    if(def.isFinal&&boss.phase!=='enter'){
+      const pulse=0.5+Math.sin(frame*0.1)*0.5;
+      ctx.save();
+      ctx.globalAlpha=0.55+pulse*0.45;
+      ctx.fillStyle='#00ff99'; ctx.font='7px "Press Start 2P"';
+      ctx.textAlign='center'; ctx.shadowColor='#00ff99'; ctx.shadowBlur=8;
+      ctx.fillText('FINAL BOSS',boss.x+boss.w/2,boss.y-18);
+      ctx.textAlign='left'; ctx.restore();
+    }
+  }
+
+  projectiles.forEach(p=>{
+    if(imgLeek.complete&&imgLeek.naturalWidth>0){
+      ctx.save();ctx.filter='brightness(1.6) drop-shadow(0 0 4px #2ecc71)';
+      ctx.drawImage(imgLeek,p.x|0,p.y|0,p.w,p.h);ctx.restore();
+    } else {ctx.fillStyle='#2ecc71';ctx.fillRect(p.x|0,p.y|0,p.w,p.h);}
+  });
+
+  if(miku&&miku.shield){
+    ctx.save();ctx.strokeStyle='#3498db';ctx.lineWidth=3;
+    ctx.shadowColor='#3498db';ctx.shadowBlur=12;
+    ctx.globalAlpha=0.6+Math.sin(frame*0.15)*0.3;
+    ctx.beginPath();ctx.ellipse(miku.x+miku.w/2,miku.y+miku.h/2,miku.w/2+8,miku.h/2+6,0,0,Math.PI*2);
+    ctx.stroke();ctx.restore();
+  }
+
+  particles.forEach(p=>{
+    ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.col;ctx.fillRect(p.x|0,p.y|0,p.sz,p.sz);
+  });
+  ctx.globalAlpha=1;
+
+  ctx.fillStyle='rgba(57,197,187,0.22)';ctx.font='8px "Press Start 2P"';
+  ctx.fillText('SPD '+speed.toFixed(1),W-110,20);
+
+  if(bossActive&&currentBossDef){
+    if(currentBossDef.isFinal){
+      const pulse=0.5+Math.sin(frame*0.12)*0.5;
+      ctx.fillStyle=`rgba(0,255,153,${0.5+pulse*0.5})`;
+      ctx.font='9px "Press Start 2P"';
+      ctx.fillText('★ FINAL BOSS ★',W/2-58,H-10);
+    } else {
+      ctx.fillStyle=currentBossDef.labelColor+'99';
+      ctx.font='8px "Press Start 2P"';
+      ctx.fillText('!! BOSS !!',W/2-40,H-10);
+    }
+  }
+}
+
+// ── LOOP ──────────────────────────────────────────────────────────────────────
+function loop(){
+  if(state==='playing'||state==='boss'){update();draw();}
+  else if(state==='victory'){
+    // seguir dibujando partículas de la explosión
+    ctx.fillStyle='#060d18'; ctx.fillRect(0,0,W,H);
+    drawCity(0);
+    ctx.fillStyle='#081220'; ctx.fillRect(0,GROUND_Y+72,W,H-GROUND_Y-72);
+    ctx.fillStyle='#39c5bb'; ctx.fillRect(0,GROUND_Y+72,W,2);
+    particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.18;p.life-=p.decay;});
+    particles=particles.filter(p=>p.life>0);
+    particles.forEach(p=>{
+      ctx.globalAlpha=Math.max(0,p.life);
+      ctx.fillStyle=p.col; ctx.fillRect(p.x|0,p.y|0,p.sz,p.sz);
+    });
+    ctx.globalAlpha=1;
+  }
+  requestAnimationFrame(loop);
+}
+
+// ── GAME OVER ─────────────────────────────────────────────────────────────────
+function showGameOver(){
+  if(score>record){record=score;localStorage.setItem('mikuRunV3',record);}
+  updateHUD();
+  mikuEl.style.display='none';
+  document.getElementById('bossBar').style.display='none';
+  document.getElementById('bossBarBg').classList.remove('final-boss-bar');
+  document.getElementById('overlayTitle').textContent='GAME OVER';
+  document.getElementById('overlayTitle').style.color='#e74c3c';
+  document.getElementById('overlayMsg').style.display='none';
+  document.getElementById('scoreResult').style.display='block';
+  document.getElementById('scoreResult').textContent='SCORE: '+score;
+  document.getElementById('recordLabel').style.display='block';
+  document.getElementById('recordLabel').textContent='RECORD: '+record;
+  document.getElementById('btnPlay').textContent='► REINTENTAR';
+  document.getElementById('overlay').classList.remove('hidden');
+  stopAllAudio();
+}
+
+// ── CONTROLES ─────────────────────────────────────────────────────────────────
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'||e.code==='ArrowUp'){e.preventDefault();jump();}
+  if(e.code==='KeyZ'||e.code==='KeyX')   {e.preventDefault();shoot();}
+});
+canvas.addEventListener('click',      e=>{e.button===2?shoot():jump();});
+canvas.addEventListener('contextmenu',e=>{e.preventDefault();shoot();});
+canvas.addEventListener('touchstart', e=>{e.preventDefault();jump();},{passive:false});
+
+document.getElementById('btnPlay').addEventListener('click',()=>{
+  stopAllAudio();
+  currentTrackKey = null;
+
+  initGame(); state='playing';
+  document.getElementById('overlay').classList.add('hidden');
+  document.getElementById('overlayMsg').style.display='block';
+  document.getElementById('overlayTitle').style.color='#39c5bb';
+  document.getElementById('overlayTitle').textContent='ミク · RUN!';
+  document.getElementById('scoreResult').style.display='none';
+  document.getElementById('recordLabel').style.display='none';
+  document.getElementById('btnPlay').textContent='► JUGAR';
+
+  const a = audioEls['main'];
+  a.currentTime = 0; a.volume = 0;
+  a.play()
+    .then(() => { currentTrackKey = 'main'; _fadeIn('main'); })
+    .catch(e => console.warn('Audio bloqueado:', e));
+  const np = document.getElementById('nowPlaying');
+  np.textContent = TRACKS['main'].label;
+  np.style.opacity = '1';
+  setTimeout(() => { np.style.opacity = '0'; }, 4000);
+});
+
+// ── BOTÓN SIGUIENTE CICLO (victoria) ─────────────────────────────────────────
+document.getElementById('btnVictory').addEventListener('click',()=>{
+  document.getElementById('victoryOverlay').classList.remove('show');
+
+  state='playing';
+  nextBossAt = score + 300;
+  spawnTimer = 60;
+  obstacles=[]; leeks=[]; projectiles=[]; bossProjectiles=[]; particles=[];
+  bossActive=false; boss=null;
+  mikuEl.style.display='block';
+  updateMikuEl(); updateHUD();
+
+  const a = audioEls['main'];
+  a.currentTime=0; a.volume=0;
+  a.play()
+    .then(()=>{ currentTrackKey='main'; _fadeIn('main'); })
+    .catch(()=>{});
+  const np = document.getElementById('nowPlaying');
+  np.textContent=TRACKS['main'].label; np.style.opacity='1';
+  setTimeout(()=>{ np.style.opacity='0'; },4000);
+});
+
+// ── ESTRELLAS ─────────────────────────────────────────────────────────────────
+for(let i=0;i<28;i++){
+  const s=document.createElement('div');s.className='star';
+  const sz=Math.random()>0.6?3:2;
+  s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}vw;top:${Math.random()*100}vh;--d:${2+Math.random()*4}s;--delay:-${Math.random()*4}s;--op:${.15+Math.random()*.4};`;
+  document.body.appendChild(s);
+}
+
+mikuEl.style.display='none';
+loop();
+</script>
+</body>
+</html>

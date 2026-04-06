@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ミク · Top 10 Estudiantes ✨</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --teal:     #39c5bb;
+      --teal-dark:#1ba8a0;
+      --bg:       #0d0d1a;
+      --bg2:      #0a1628;
+      --card:     rgba(8,20,40,0.85);
+      --text:     #e0f8f7;
+      --dim:      rgba(57,197,187,0.55);
+      --gold:     #f0c040;
+      --silver:   #a0b4c8;
+      --bronze:   #d08860;
+      --nav-h:    58px;
+    }
+
+    body {
+      font-family: 'M PLUS Rounded 1c', sans-serif;
+      background: linear-gradient(135deg, var(--bg) 0%, var(--bg2) 50%, var(--bg) 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .star {
+      position: fixed; border-radius: 50%; background: var(--teal); opacity: 0;
+      animation: twinkle var(--d) ease-in-out infinite var(--delay); z-index: 0; pointer-events: none;
+    }
+    @keyframes twinkle { 0%,100%{opacity:0;transform:scale(.5)} 50%{opacity:var(--op);transform:scale(1)} }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; height: var(--nav-h);
+      background: rgba(8,20,40,0.97);
+      border-bottom: 1.5px solid rgba(57,197,187,0.25);
+      display: flex; align-items: center; padding: 0 28px; z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 0.95rem; font-weight: 800;
+      color: var(--teal); letter-spacing: 2px;
+      flex: 1;
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 16px; border-radius: 10px;
+      font-family: 'M PLUS Rounded 1c', sans-serif;
+      font-size: 0.78rem; font-weight: 700;
+      cursor: pointer; border: 1.5px solid rgba(57,197,187,0.25);
+      background: rgba(57,197,187,0.07); color: var(--dim);
+      letter-spacing: 1px; transition: all 0.25s; text-decoration: none;
+    }
+    .btn:hover {
+      background: rgba(57,197,187,0.15); border-color: rgba(57,197,187,0.55);
+      color: var(--teal); box-shadow: 0 0 14px rgba(57,197,187,0.15);
+    }
+
+    main {
+      padding-top: calc(var(--nav-h) + 40px);
+      padding-bottom: 60px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-left: 24px;
+      padding-right: 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    h1 {
+      font-size: 1.6rem; font-weight: 800;
+      color: var(--teal); letter-spacing: 3px;
+      text-shadow: 0 0 20px rgba(57,197,187,0.4);
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      color: var(--dim); font-size: 0.85rem;
+      letter-spacing: 1px; margin-bottom: 36px;
+    }
+
+    /* ── LAYOUT DOS COLUMNAS ── */
+    .layout-split {
+      display: flex;
+      gap: 32px;
+      align-items: flex-start;
+    }
+
+    .col-podio {
+      flex: 0 0 280px;
+      position: sticky;
+      top: calc(var(--nav-h) + 20px);
+    }
+
+    .col-lista {
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* ── PODIO ── */
+    .podio {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+
+    .podio-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: var(--card);
+      border: 1.5px solid rgba(57,197,187,0.15);
+      animation: fadeUp 0.5s ease both;
+      position: relative;
+      overflow: hidden;
+    }
+    .podio-item::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0.04;
+      border-radius: 14px;
+    }
+    .podio-item.gold   { border-color: rgba(240,192,64,0.4);  box-shadow: 0 4px 20px rgba(240,192,64,0.12); }
+    .podio-item.gold::before   { background: var(--gold); }
+    .podio-item.silver { border-color: rgba(160,180,200,0.4); box-shadow: 0 4px 20px rgba(160,180,200,0.08); }
+    .podio-item.silver::before { background: var(--silver); }
+    .podio-item.bronze { border-color: rgba(208,136,96,0.4);  box-shadow: 0 4px 20px rgba(208,136,96,0.08); }
+    .podio-item.bronze::before { background: var(--bronze); }
+
+    .podio-item:nth-child(1) { animation-delay: 0s; }
+    .podio-item:nth-child(2) { animation-delay: 0.1s; }
+    .podio-item:nth-child(3) { animation-delay: 0.2s; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .podio-medal {
+      width: 52px; height: 52px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; flex-shrink: 0;
+      border: 2px solid transparent;
+      background: var(--bg);
+    }
+    .podio-item.gold   .podio-medal { border-color: var(--gold);   box-shadow: 0 0 14px rgba(240,192,64,0.35); }
+    .podio-item.silver .podio-medal { border-color: var(--silver); box-shadow: 0 0 14px rgba(160,180,200,0.3); }
+    .podio-item.bronze .podio-medal { border-color: var(--bronze); box-shadow: 0 0 14px rgba(208,136,96,0.3); }
+
+    .podio-info { flex: 1; min-width: 0; }
+    .podio-rank {
+      font-size: 0.68rem; font-weight: 800; letter-spacing: 2px;
+      text-transform: uppercase; margin-bottom: 2px;
+    }
+    .podio-item.gold   .podio-rank { color: var(--gold); }
+    .podio-item.silver .podio-rank { color: var(--silver); }
+    .podio-item.bronze .podio-rank { color: var(--bronze); }
+
+    .podio-nombre {
+      font-weight: 800; font-size: 0.9rem;
+      color: var(--text); white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .podio-carrera {
+      font-size: 0.73rem; color: var(--dim);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    .podio-score {
+      font-size: 1.25rem; font-weight: 800; flex-shrink: 0;
+    }
+    .podio-item.gold   .podio-score { color: var(--gold);   text-shadow: 0 0 10px rgba(240,192,64,0.5); }
+    .podio-item.silver .podio-score { color: var(--silver); }
+    .podio-item.bronze .podio-score { color: var(--bronze); }
+
+    .podio-label {
+      font-size: 0.72rem; font-weight: 800;
+      color: var(--dim); letter-spacing: 2px;
+      text-transform: uppercase; margin-bottom: 14px;
+    }
+
+    /* ── LISTA ── */
+    .card {
+      background: var(--card);
+      border: 1.5px solid rgba(57,197,187,0.2);
+      border-radius: 16px; overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 40px rgba(57,197,187,0.04);
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 0.72rem; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 3px;
+      color: var(--dim); padding: 18px 24px 12px;
+    }
+
+    .rank-list { list-style: none; }
+
+    .rank-item {
+      display: flex; align-items: center; gap: 16px;
+      padding: 14px 24px;
+      border-top: 1px solid rgba(57,197,187,0.1);
+      animation: fadeUp 0.4s ease both;
+      transition: background 0.15s;
+    }
+    .rank-item:hover { background: rgba(57,197,187,0.05); }
+
+    .rank-num {
+      font-size: 0.85rem; color: var(--dim);
+      width: 24px; text-align: right; flex-shrink: 0; font-weight: 700;
+    }
+
+    .rank-info { flex: 1; min-width: 0; }
+    .rank-nombre { font-weight: 800; font-size: 0.9rem; color: var(--text); }
+    .rank-carrera { font-size: 0.75rem; color: var(--dim); margin-top: 2px; }
+
+    .rank-score {
+      font-size: 1rem; font-weight: 800; color: var(--teal);
+      text-shadow: 0 0 8px rgba(57,197,187,0.4);
+      flex-shrink: 0;
+    }
+
+    .rank-bar-wrap {
+      width: 80px; height: 5px;
+      background: rgba(57,197,187,0.1);
+      border-radius: 99px; overflow: hidden; flex-shrink: 0;
+    }
+    .rank-bar {
+      height: 100%; border-radius: 99px;
+      background: linear-gradient(90deg, var(--teal-dark), var(--teal));
+      transition: width 0.8s ease;
+    }
+
+    .notas-detalle { display: flex; gap: 6px; margin-top: 4px; }
+    .nota-chip {
+      font-size: 0.7rem; background: rgba(57,197,187,0.08);
+      border: 1px solid rgba(57,197,187,0.2);
+      border-radius: 6px; padding: 2px 7px; color: var(--dim);
+    }
+
+    .empty { text-align: center; color: var(--dim); padding: 40px; font-size: 0.88rem; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 700px) {
+      .layout-split { flex-direction: column; }
+      .col-podio { flex: unset; width: 100%; position: static; }
+    }
+
+    .easter-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 999;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .easter-overlay.visible { opacity: 1; pointer-events: all; }
+    .easter-img {
+      max-width: 80vw; max-height: 80vh;
+      border-radius: 20px;
+      border: 2px solid var(--teal);
+      box-shadow: 0 0 60px rgba(57,197,187,0.4);
+      transform: scale(0.8);
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .easter-overlay.visible .easter-img { transform: scale(1); }
+
+    
+    /* ── ROCK EASTER EGG ── */
+    #rockOverlay {
+      position: fixed; inset: 0; z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.78);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.45s ease;
+    }
+    #rockOverlay.show {
+      opacity: 1;
+    }
+    #rockImg {
+      width: clamp(200px, 28vw, 350px);
+      height: auto;
+      border-radius: 16px;
+      border: 3px solid #39c5bb;
+      box-shadow: 0 0 50px rgba(57,197,187,0.6);
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    🎤 ミク · TOP ESTUDIANTES
+  </div>
+  <a class="btn" href="/dashprincipal">← Volver al tablero</a>
+</nav>
+
+<main>
+  <h1>🏆 Top 10 Estudiantes</h1>
+  <p class="subtitle">Ranking general por promedio de notas ✨</p>
+  <div id="contenido"><p class="empty">Cargando...</p></div>
+</main>
+
+<!-- Easter egg -->
+<div class="easter-overlay" id="easterOverlay" onclick="cerrarEaster()">
+  <img class="easter-img" id="easterImg" src="" alt="">
+</div>
+
+<script>
+  // Stars
+  for(let i=0;i<40;i++){
+    const s=document.createElement('div'); s.className='star';
+    const sz=Math.random()*2.5+1;
+    s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}vw;top:${Math.random()*100}vh;--d:${2+Math.random()*4}s;--delay:-${Math.random()*4}s;--op:${.2+Math.random()*.5};`;
+    document.body.appendChild(s);
+  }
+
+  // Easter egg
+  const PALABRA = "miku";
+  const IMAGEN_URL = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Hatsune.Miku.full.1381294.jpg/800px-Hatsune.Miku.full.1381294.jpg";
+  let buffer = "";
+  document.addEventListener('keydown', e => {
+    buffer += e.key.toLowerCase();
+    if (buffer.length > PALABRA.length) buffer = buffer.slice(-PALABRA.length);
+    if (buffer === PALABRA) { activarEaster(); buffer = ""; }
+  });
+  function activarEaster() {
+    const overlay = document.getElementById('easterOverlay');
+    document.getElementById('easterImg').src = IMAGEN_URL;
+    overlay.classList.add('visible');
+    setTimeout(cerrarEaster, 4000);
+  }
+  function cerrarEaster() {
+    document.getElementById('easterOverlay').classList.remove('visible');
+  }
+
+  // Cargar top
+  async function cargarTop() {
+    try {
+      const res  = await fetch('/api/estudiantes/top');
+      const data = await res.json();
+      if (!data.ok || data.estudiantes.length === 0) {
+        document.getElementById('contenido').innerHTML = '<p class="empty">No hay estudiantes registrados.</p>';
+        return;
+      }
+      const est = data.estudiantes;
+      let html = '<div class="layout-split">';
+
+      // ── Columna izquierda: Podio ──
+      html += '<div class="col-podio">';
+      html += '<div class="podio-label">🏅 Podio</div>';
+      html += '<div class="podio">';
+
+      const top3 = est.slice(0, 3);
+      const clases  = ['gold', 'silver', 'bronze'];
+      const emojis  = ['🥇', '🥈', '🥉'];
+      const labels  = ['1° Lugar', '2° Lugar', '3° Lugar'];
+
+      top3.forEach((e, i) => {
+        html += `<div class="podio-item ${clases[i]}">
+          <div class="podio-medal">${emojis[i]}</div>
+          <div class="podio-info">
+            <div class="podio-rank">${labels[i]}</div>
+            <div class="podio-nombre">${e.nombre}</div>
+            <div class="podio-carrera">${e.carrera}</div>
+          </div>
+          <div class="podio-score">${e.promedio}</div>
+        </div>`;
+      });
+
+      html += '</div></div>'; // cierra .podio y .col-podio
+
+      // ── Columna derecha: Lista ──
+      html += '<div class="col-lista">';
+      const resto = est.slice(3);
+      if (resto.length > 0) {
+        html += `<div class="card">
+          <div class="card-title">Posiciones 4 – ${Math.min(10, est.length)}</div>
+          <ul class="rank-list">`;
+        resto.forEach((e, i) => {
+          const pct = ((e.promedio / 5) * 100).toFixed(1);
+          const delay = (i * 0.06).toFixed(2);
+          html += `<li class="rank-item" style="animation-delay:${delay}s">
+            <span class="rank-num">${i + 4}</span>
+            <div class="rank-info">
+              <div class="rank-nombre">${e.nombre}</div>
+              <div class="rank-carrera">${e.carrera}</div>
+              <div class="notas-detalle">
+                <span class="nota-chip">N1: ${e.nota1}</span>
+                <span class="nota-chip">N2: ${e.nota2}</span>
+                <span class="nota-chip">N3: ${e.nota3}</span>
+              </div>
+            </div>
+            <div class="rank-bar-wrap"><div class="rank-bar" style="width:${pct}%"></div></div>
+            <div class="rank-score">${e.promedio}</div>
+          </li>`;
+        });
+        html += '</ul></div>';
+      } else {
+        html += '<p class="empty">Solo hay 3 estudiantes registrados.</p>';
+      }
+      html += '</div>'; // cierra .col-lista
+
+      html += '</div>'; // cierra .layout-split
+
+      document.getElementById('contenido').innerHTML = html;
+    } catch(err) {
+      document.getElementById('contenido').innerHTML = '<p class="empty">Error al cargar los datos.</p>';
+    }
+  }
+
+  cargarTop();
+</script>
+<!-- ── ROCK EASTER EGG ── -->
+<div id="rockOverlay">
+  <img id="rockImg" src="/static/rock.jpg" alt="The Rock">
+</div>
+<audio id="vineAudio" src="/static/Vine boom sound effect.mp3" preload="auto"></audio>
+
+<script>
+  (function() {
+    var rockTimer = null;
+
+    document.addEventListener('keydown', function(e) {
+      if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
+      if (e.key === 'r' || e.key === 'R') showRock();
+    });
+
+    function showRock() {
+      var overlay = document.getElementById('rockOverlay');
+      var audio   = document.getElementById('vineAudio');
+
+      // Cancelar timer anterior y resetear clase para forzar reflow
+      clearTimeout(rockTimer);
+      overlay.classList.remove('show');
+      void overlay.offsetWidth; // reflow — arranca transición desde 0
+
+      overlay.classList.add('show');
+      audio.currentTime = 0;
+      audio.play().catch(function(){});
+
+      rockTimer = setTimeout(function() {
+        overlay.classList.remove('show'); // fade out automático
+      }, 3000);
+    }
+  })();
+</script>
+</body>
+</html>

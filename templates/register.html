@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ミク Register ✨</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{min-height:100vh;background:#0d0d1a;display:flex;align-items:center;
+    justify-content:center;font-family:'M PLUS Rounded 1c',sans-serif;
+    overflow:hidden;user-select:none;}
+  #bg{position:fixed;inset:0;
+    background:linear-gradient(135deg,#0d0d1a 0%,#0a1628 50%,#0d0d1a 100%);z-index:0;}
+  .star{position:fixed;border-radius:50%;background:#39c5bb;opacity:0;
+    animation:twinkle var(--d) ease-in-out infinite var(--delay);z-index:0;}
+  @keyframes twinkle{0%,100%{opacity:0;transform:scale(.5)}50%{opacity:var(--op);transform:scale(1)}}
+
+  /* ── Miku overlay (igual que login) ── */
+  #imgBg{position:fixed;inset:0;z-index:1;opacity:0;pointer-events:none;
+    display:flex;align-items:center;justify-content:center;
+    transition:opacity .4s;background:rgba(0,0,0,.6);}
+  #imgBg.active{opacity:1;}
+  #imgBg img{width:100vw;height:100vh;object-fit:cover;
+    animation:imgShake .4s ease-out;}
+  @keyframes imgShake{
+    0%{transform:scale(1.08) rotate(-1deg)}
+    25%{transform:scale(.97) rotate(1deg)}
+    50%{transform:scale(1.03) rotate(-.5deg)}
+    75%{transform:scale(.99) rotate(.5deg)}
+    100%{transform:scale(1) rotate(0)}}
+  #imgBg.active::after{content:'';position:fixed;inset:0;
+    border:4px solid #39c5bb;
+    box-shadow:inset 0 0 40px rgba(57,197,187,.3),0 0 60px rgba(57,197,187,.4);
+    pointer-events:none;z-index:5;animation:borderPulse .3s ease-out;}
+  @keyframes borderPulse{
+    0%{box-shadow:inset 0 0 80px rgba(57,197,187,.6),0 0 100px rgba(57,197,187,.8)}
+    100%{box-shadow:inset 0 0 40px rgba(57,197,187,.3),0 0 60px rgba(57,197,187,.4)}}
+  #imgDim{position:fixed;inset:0;background:rgba(0,0,0,.18);z-index:2;
+    opacity:0;pointer-events:none;transition:opacity .4s;}
+  #imgDim.active{opacity:1;}
+
+  /* ── Hint (igual que login) ── */
+  #hint{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
+    color:rgba(57,197,187,.6);font-size:12px;letter-spacing:3px;
+    text-transform:uppercase;z-index:20;white-space:nowrap;
+    transition:opacity .4s;animation:hintPulse 2s ease-in-out infinite;}
+  @keyframes hintPulse{0%,100%{opacity:.5}50%{opacity:1}}
+  #hint.dim{opacity:.2;}
+
+  /* ── Notas flotantes (igual que login) ── */
+  .note{position:fixed;font-size:22px;opacity:0;pointer-events:none;
+    z-index:12;animation:noteFloat 2.5s ease-out forwards;}
+  @keyframes noteFloat{
+    0%{opacity:0;transform:translateY(0) scale(.6) rotate(-10deg)}
+    20%{opacity:1}80%{opacity:.8}
+    100%{opacity:0;transform:translateY(-180px) scale(1.2) rotate(15deg)}}
+
+  /* ── Card / form ── */
+  #formWrap{position:relative;z-index:10;opacity:0;transform:translateY(24px) scale(.92);
+    transition:opacity .9s,transform .9s;pointer-events:none;}
+  #formWrap.visible{opacity:1;transform:translateY(0) scale(1);pointer-events:all;}
+  .card{background:rgba(8,20,40,.38);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+    border:1.5px solid rgba(57,197,187,.45);border-radius:20px;
+    padding:44px 50px;width:420px;
+    box-shadow:0 0 0 1px rgba(57,197,187,.08),
+               0 8px 40px rgba(0,0,0,.6),
+               0 0 60px rgba(57,197,187,.06);
+    position:relative;overflow:hidden;}
+  .card::before{content:'';position:absolute;top:-60%;left:-60%;
+    width:60%;height:220%;
+    background:linear-gradient(105deg,transparent,rgba(57,197,187,.06),transparent);
+    animation:shineSweep 4s ease-in-out infinite;}
+  @keyframes shineSweep{0%,100%{left:-60%;opacity:0}30%{opacity:1}60%{left:160%;opacity:0}}
+  .logo{text-align:center;margin-bottom:30px;}
+  .logo .miku-icon{font-size:36px;display:block;margin-bottom:8px;
+    animation:iconBounce 2s ease-in-out infinite;}
+  @keyframes iconBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+  .logo h1{font-size:22px;font-weight:800;color:#39c5bb;letter-spacing:3px;
+    text-shadow:0 0 12px rgba(57,197,187,.5);}
+  .logo p{color:rgba(57,197,187,.45);font-size:11px;letter-spacing:3px;
+    margin-top:5px;text-transform:uppercase;}
+  .divider{height:1px;
+    background:linear-gradient(90deg,transparent,rgba(57,197,187,.3),transparent);
+    margin:22px 0 8px;}
+  label{display:block;color:rgba(57,197,187,.6);font-size:10px;
+    letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;margin-top:18px;}
+  input[type=text],input[type=password]{
+    width:100%;background:rgba(57,197,187,.05);
+    border:1.5px solid rgba(57,197,187,.2);border-radius:10px;
+    color:#e0f8f7;padding:11px 14px;font-size:14px;
+    font-family:'M PLUS Rounded 1c',sans-serif;outline:none;transition:all .4s;}
+  input:focus{border-color:rgba(57,197,187,.7);background:rgba(57,197,187,.09);
+    box-shadow:0 0 14px rgba(57,197,187,.18);}
+  input::placeholder{color:rgba(57,197,187,.25);}
+  button.loginBtn{width:100%;margin-top:26px;padding:13px;border:none;
+    border-radius:12px;
+    background:linear-gradient(90deg,#1ba8a0,#39c5bb,#5dd9d0);
+    color:#0a1628;font-family:'M PLUS Rounded 1c',sans-serif;
+    font-weight:800;font-size:14px;letter-spacing:3px;cursor:pointer;
+    transition:all .35s;box-shadow:0 4px 20px rgba(57,197,187,.35);
+    text-transform:uppercase;}
+  button.loginBtn:hover{transform:translateY(-2px);
+    box-shadow:0 6px 28px rgba(57,197,187,.55);}
+  button.loginBtn:active{transform:scale(.97);}
+  .error-msg{margin-top:14px;padding:10px 14px;
+    background:rgba(231,76,60,.15);border:1px solid rgba(231,76,60,.4);
+    border-radius:10px;color:#e74c3c;font-size:12px;letter-spacing:1px;text-align:center;}
+  .success-msg{margin-top:14px;padding:10px 14px;
+    background:rgba(57,197,187,.12);border:1px solid rgba(57,197,187,.4);
+    border-radius:10px;color:#39c5bb;font-size:12px;letter-spacing:1px;text-align:center;}
+  .sub{text-align:center;margin-top:16px;font-size:12px;
+    color:rgba(255,255,255,.2);letter-spacing:1px;}
+  .sub a{color:rgba(57,197,187,.6);text-decoration:none;}
+  .sub a:hover{color:#39c5bb;}
+</style>
+</head>
+<body>
+<div id="bg"></div>
+
+<!-- Miku overlay -->
+<div id="imgBg">
+  <img src="/static/speed-meme-miku.png" alt="miku" onerror="this.style.display='none'">
+</div>
+<div id="imgDim"></div>
+
+<!-- Sonido (mismo que login) -->
+<audio id="sfx" src="/static/mikudayo_notification.mp3" preload="auto"></audio>
+
+<div id="formWrap">
+  <div class="card">
+    <div class="logo">
+      <span class="miku-icon">🌟</span>
+      <h1>CREAR CUENTA</h1>
+      <p>Únete al concierto de Miku</p>
+    </div>
+    <div class="divider"></div>
+
+    <form method="POST" action="/register">
+      <label>Usuario</label>
+      <input type="text" name="username" placeholder="miku_fan_01" required autocomplete="username">
+      <label>Contraseña</label>
+      <input type="password" name="password" placeholder="••••••••" required autocomplete="new-password">
+      <label>Confirmar contraseña</label>
+      <input type="password" name="confirm" placeholder="••••••••" required autocomplete="new-password">
+      <button type="submit" class="loginBtn">🎤 Registrarme</button>
+    </form>
+
+    {% if error %}
+    <div class="error-msg">⚠️ {{ error }}</div>
+    {% endif %}
+    {% if success %}
+    <div class="success-msg">{{ success }} <a href="/" style="color:#39c5bb">Ir al login →</a></div>
+    {% endif %}
+
+    <p class="sub">¿Ya tienes cuenta? <a href="/">Iniciar sesión</a></p>
+  </div>
+</div>
+
+<p id="hint">🎵 haz click en el fondo para invocar a miku 🎵</p>
+
+<script>
+  const NOTES=['🎵','🎶','🎤','💙','✨','🌟','💫','🎼','🎹','🩵'];
+  let showing=false, hideTimer=null;
+  const imgBg=document.getElementById('imgBg');
+  const imgDim=document.getElementById('imgDim');
+  const sfx=document.getElementById('sfx');
+  const hint=document.getElementById('hint');
+
+  // Estrellas de fondo
+  for(let i=0;i<55;i++){
+    const s=document.createElement('div');s.className='star';
+    const sz=Math.random()*3+1;
+    s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}vw;top:${Math.random()*100}vh;--d:${2+Math.random()*4}s;--delay:-${Math.random()*4}s;--op:${.3+Math.random()*.7};`;
+    document.body.appendChild(s);
+  }
+
+  // Entrada del formulario
+  setTimeout(()=>document.getElementById('formWrap').classList.add('visible'),350);
+
+  // Click en el fondo → invocar Miku
+  document.body.addEventListener('click',e=>{
+    if(e.target.closest('#formWrap'))return;
+    triggerMiku();
+  });
+
+  function triggerMiku(){
+    if(showing)return;
+    showing=true;
+    clearTimeout(hideTimer);
+    sfx.currentTime=0;
+    sfx.play().catch(()=>{});
+    imgBg.classList.add('active');
+    imgDim.classList.add('active');
+    hint.classList.add('dim');
+    for(let i=0;i<8;i++) setTimeout(()=>spawnNote(),i*120);
+    sfx.onended=hideMiku;
+    hideTimer=setTimeout(hideMiku,8000);
+  }
+
+  function hideMiku(){
+    clearTimeout(hideTimer);
+    sfx.onended=null;
+    imgBg.style.transition='opacity .6s';
+    imgBg.style.opacity='0';
+    imgDim.style.transition='opacity .6s';
+    imgDim.style.opacity='0';
+    setTimeout(()=>{
+      imgBg.classList.remove('active');imgDim.classList.remove('active');
+      imgBg.style.opacity='';imgBg.style.transition='';
+      imgDim.style.opacity='';imgDim.style.transition='';
+      hint.classList.remove('dim');showing=false;
+    },650);
+  }
+
+  function spawnNote(){
+    const el=document.createElement('div');
+    el.className='note';
+    el.textContent=NOTES[Math.floor(Math.random()*NOTES.length)];
+    el.style.left=(Math.random()*85+5)+'vw';
+    el.style.top=(Math.random()*70+15)+'vh';
+    el.style.fontSize=(18+Math.random()*28)+'px';
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),2600);
+  }
+</script>
+</body>
+</html>
