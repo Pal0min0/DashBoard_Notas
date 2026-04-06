@@ -1,14 +1,16 @@
 import mysql.connector
 import pandas as pd
+import os
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
 def conectar():
     conexion = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="",          # ← cambia si tu MySQL tiene contraseña
-        database="dashnotas"
+         host=os.environ.get("DB_HOST", "localhost"),
+        user=os.environ.get("DB_USER", "root"),
+        password=os.environ.get("DB_PASSWORD", ""),
+        database=os.environ.get("DB_NAME", "dashnotas"),
+        port=int(os.environ.get("DB_PORT", 3306))
     )
     return conexion
 
