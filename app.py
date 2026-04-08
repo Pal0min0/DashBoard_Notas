@@ -144,7 +144,7 @@ def api_editar():
         return jsonify({"ok": False, "error": "No autenticado"}), 401
     datos = request.get_json()
     try:
-        editar_estudiante(datos)   # datos["id"] viene del frontend
+        editar_estudiante(datos)
         return jsonify({"ok": True})
     except ValueError as e:
         return jsonify({"ok": False, "error": str(e)})
