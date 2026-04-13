@@ -5,12 +5,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 
 def conectar():
-    conexion = mysql.connector.connect(
-         host=os.environ.get("DB_HOST", "localhost"),
-        user=os.environ.get("DB_USER", "root"),
-        password=os.environ.get("DB_PASSWORD", ""),
-        database=os.environ.get("DB_NAME", "dashnotas"),
-        port=int(os.environ.get("DB_PORT", 3306))
+    return mysql.connector.connect(
+        host=os.getenv("MYSQLHOST"),
+        port=int(os.getenv("MYSQLPORT")),
+        user=os.getenv("MYSQLUSER"),
+        password=os.getenv("MYSQLPASSWORD"),
+        database=os.getenv("MYSQLDATABASE"),
+        
     )
     return conexion
 

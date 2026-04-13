@@ -5,7 +5,7 @@
 
 CREATE DATABASE IF NOT EXISTS `dashnotas`
   CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-USE `dashnotas`;
+USE railway;
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
