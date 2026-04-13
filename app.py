@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 from flask import Flask, render_template, request, redirect, session, url_for, jsonify, send_file
-from database import (
+from databases import (
     obtenerusuarios, registrar_usuario, verificar_password,
     obtenerestudiantes, agregar_estudiante, eliminar_estudiante,
     buscar_estudiantes, editar_estudiante, obtener_top_estudiantes,

@@ -4,7 +4,7 @@ import dash
 from dash import html, Input, Output, dcc, dash_table, State, ctx, no_update
 import dash_bootstrap_components as dbc
 
-from database import (
+from databases import (
     obtenerestudiantes, agregar_estudiante, eliminar_estudiante
 )
 
