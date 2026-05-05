@@ -7,3 +7,4 @@ dash
 matplotlib
 reportlab
 dash-bootstrap-components
+openpyxl
